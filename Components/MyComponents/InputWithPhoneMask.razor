@@ -1,0 +1,65 @@
+﻿<input @attributes="AdditionalAttributes"
+       value="@_displayValue"
+       @oninput="HandleInput"
+       @onblur="HandleBlur"
+       type="text" />
+
+@code {
+    private string _displayValue = "";
+
+    [Parameter]
+    public string Value { get; set; } = "";
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; } = new();
+
+    protected override void OnParametersSet()
+    {
+        _displayValue = FormatPhoneNumber(Value);
+    }
+
+    private void HandleInput(ChangeEventArgs e)
+    {
+        var input = e.Value?.ToString() ?? "";
+        var digits = new string(input.Where(char.IsDigit).ToArray());
+
+        if (digits.Length > 11)
+            digits = digits[..11];
+
+        if (digits.Length > 0 && digits[0] != '7' && digits[0] != '8')
+            digits = "7" + digits;
+
+        _displayValue = FormatPhoneNumber(digits);
+        ValueChanged.InvokeAsync(digits);
+    }
+
+    private void HandleBlur(FocusEventArgs e)
+    {
+        _displayValue = FormatPhoneNumber(Value);
+    }
+
+    private string FormatPhoneNumber(string digits)
+    {
+        if (string.IsNullOrEmpty(digits) || digits.Length < 1)
+            return "";
+
+        try
+        {
+            return digits.Length switch
+            {
+                1 => $"+7 ({digits}",
+                <= 4 => $"+7 ({digits[1..]}",
+                <= 7 => $"+7 ({digits.Substring(1, 3)}) {digits[4..]}",
+                <= 9 => $"+7 ({digits.Substring(1, 3)}) {digits.Substring(4, 3)}-{digits[7..]}",
+                _ => $"+7 ({digits.Substring(1, 3)}) {digits.Substring(4, 3)}-{digits.Substring(7, 2)}-{digits.Substring(9)}"
+            };
+        }
+        catch
+        {
+            return $"+7{digits}";
+        }
+    }
+}

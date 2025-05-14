@@ -1,0 +1,30 @@
+﻿@using System.Text.RegularExpressions
+<style>
+    input{
+    background: transparent;
+    border: none;
+    }
+
+    input:focus {
+    outline: none; 
+    border: none; 
+    background: transparent;
+    }
+</style>
+
+<div style="width: 220px; flex-direction: column; display: inline-flex">
+    <div style="align-self: stretch; border-radius: 4px; outline: 1px var(--Gold, #FBD61C) solid; display: flex">
+        <div style="align-self: stretch; flex: 1 1 0; padding-left: 16px; display: inline-flex">
+            <div style="flex: 1 1 0; height: 48px; padding-top: 4px; padding-bottom: 4px; position: relative; ">
+                <div style="padding-left: 4px; padding-right: 4px; left: -4px; top: -12px; position: absolute; background: var(--Background, #34343C); justify-content: flex-start; align-items: center; display: inline-flex">
+                    <div style="color: antiquewhite; font-size: 12px; font-family: Roboto; font-weight: 400; line-height: 16px; letter-spacing: 0.40px;">@LabelText</div>
+                </div>
+            </div>
+        </div>
+        <InputWithPhoneMask style="padding: 0 0 0 12px; width: 220px; height: 45px; position: absolute; color: antiquewhite;" @bind-Value="phoneNumber" placeholder="+7 (___) ___-__-__"/>
+    </div>
+</div>
+@code{
+    [Parameter] public string LabelText { get; set; } = "Текст";
+    private string phoneNumber;
+}
