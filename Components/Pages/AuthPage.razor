@@ -1,12 +1,123 @@
 ﻿@page "/"
 @rendermode InteractiveServer
-<div style="width: 100vw; height: 100vh; position: fixed; padding-left: 850px; padding-right: 850px; padding-top: 80px; padding-bottom: 80px; background: #34343C; overflow: hidden; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 150px; display: inline-flex">
-    <img style="width: 220px; height: 348px" src="favicon.png" />
-    <div style="flex-direction: column;   gap: 20px; display: flex">
-        <MyTextField LabelText="Номер телефона"></MyTextField>
-        <MyButton ButtonText="Авторизоваться"></MyButton>
-    </div>
-</div>
-@code {
+@inject BootcampContext _context
+@inject NavigationManager nav
+@inject UserService userService
+<PageContainer>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; max-width: 400px; margin: 0 auto;">
+        <Logo></Logo>
+        <h1 style="color: antiquewhite; text-align: center; width: 200%; margin: 0; font-size: 1.5rem;">
+            @(creatingPassword ? "Придумайте пароль для аккаунта" : "Введите свой номер телефона чтобы авторизоваться")
+        </h1>
 
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div style="color: #ff6b6b; background: rgba(255, 107, 107, 0.1);
+                     padding: 10px 15px; border-radius: 4px; width: 200%;
+                     text-align: center; font-size: 0.9rem;">
+                @errorMessage
+            </div>
+        }
+
+        <div style="display: flex; flex-direction: column; gap: 20px; width: 100%;">
+            @if (!creatingPassword)
+            {
+                <MyTextField LabelText="Номер телефона" 
+                IsPhoneNumber="true"
+                @bind-Value="phoneNumber"
+                style="width: 100%" />
+            }
+
+            @if (creatingPassword || showPasswordField)
+            {
+                <MyTextField LabelText="Пароль" @bind-Value="password" style="width: 100%"></MyTextField>
+            }
+            <MyBorders>
+                <MyButton ButtonText="Авторизоваться"
+                OnClick="async () => await Auth()"
+                style="width: 100%;" />
+            </MyBorders>
+        </div>
+    </div>
+</PageContainer>
+
+@code {
+    private string phoneNumber = "";
+    private string password = "";
+    private bool creatingPassword = false;
+    private bool showPasswordField = false;
+    private string errorMessage = "";
+
+    private async Task Auth() {
+        errorMessage = "";
+        if(phoneNumber.Length != 11) {
+            errorMessage = "Введите корректный номер телефона";
+            return;
+        }
+
+        var user = await _context.Users.Where(x => x.Phone == phoneNumber).FirstOrDefaultAsync();
+        if(user == null) {
+            await CreateAccount(phoneNumber);
+        }
+        else if(user.RequireData == true) {
+            RequireData(user);
+        }
+        else if (showPasswordField || creatingPassword)
+        {
+            Login(user);
+        }
+        else if(string.IsNullOrEmpty(user.Password)){
+            creatingPassword = true;
+        }
+        else {
+            showPasswordField = true;
+        }
+    }
+
+    private void RequireData(User user) {
+        userService.CurrentUser = user;
+        nav.NavigateTo("/AccountData");
+
+    }
+
+    private async Task CreateAccount(string number) {
+        User newUser = new User() { Phone = number, RequireData = true };
+        _context.Users.Add(newUser);
+        await _context.SaveChangesAsync();
+        userService.CurrentUser = newUser;
+        nav.NavigateTo("/AccountData");
+    }
+
+    private async void Login(User user) {
+        if (string.IsNullOrEmpty(user.Password)) {
+            await CreatePasswordLogin(user);
+        }
+        if (user.Password == password)
+        {
+            errorMessage = "";
+            if(user.Role == "Admin") {
+                LoginAsAdmin(user);
+                return;
+            }
+            userService.CurrentUser = user;
+            userService.CurrentClient = await _context.Clients.Where(x => x.IdUser == user.Id).FirstOrDefaultAsync();
+            nav.NavigateTo("/home");
+        }
+        else errorMessage = "Введен неправильный пароль";
+    }
+
+    private void LoginAsAdmin(User user) {
+        userService.CurrentUser = user;
+        userService.IsAdmin = true;
+        nav.NavigateTo("/admin");
+    }
+
+    private async Task CreatePasswordLogin(User user) {
+        if(password.Length < 6) {
+            errorMessage = "Пароль слишком короткий. Минимум 6 символов!";
+            return;
+        }
+        user.Password = password;
+        await _context.SaveChangesAsync();
+    }
 }

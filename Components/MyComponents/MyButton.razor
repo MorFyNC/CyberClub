@@ -1,12 +1,27 @@
-﻿<div style="width: @(Width)px; height: @(Height)px;  border-radius: 100px; outline: 1px var(--Gold, #FBD61C) solid;   display: flex">
-    <div style="flex: 1 1 0; justify-content: center; display: inline-flex">
-        <button style="width: @(Width)px; height: @(Height)px; justify-content: center; display: flex; flex-direction: column; color: antiquewhite; font-size: 14px; font-family: Roboto; background: inherit; border: inherit" @onclick="OnClick">@ButtonText</button>
-    </div>
-</div>
+﻿<button class="my-button"
+        style="width: @(Width)px; height: @(Height)px; @(AdditionalStyles)"
+        @attributes="AdditionalAttributes"
+        @onclick="HandleClick"
+        disabled="@IsDisabled">
+    @ButtonText
+</button>
 
 @code {
     [Parameter] public int Width { get; set; } = 220;
     [Parameter] public int Height { get; set; } = 40;
     [Parameter] public EventCallback OnClick { get; set; }
     [Parameter] public string ButtonText { get; set; } = "Button";
+    [Parameter] public bool IsDisabled { get; set; }
+    [Parameter] public string AdditionalStyles { get; set; } = "";
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; } = new();
+
+    private async Task HandleClick()
+    {
+        if (!IsDisabled)
+        {
+            await OnClick.InvokeAsync();
+        }
+    }
 }

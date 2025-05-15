@@ -1,0 +1,16 @@
+﻿@page "/home"
+@inject NavigationManager nav
+@inject UserService userService
+
+<PageContainer>
+    <div style="display:flex; justify-content:center; align-content: center; height: 100%; width:100%;">
+        <h1 style="color: antiquewhite; text-align: center; width: 200%; margin: 0; font-size: 1.5rem;">Домашняя страница пользователя</h1>
+    </div>
+</PageContainer>
+
+@code {
+    protected override void OnInitialized()
+    {
+        if (userService.CurrentUser == null) nav.NavigateTo("/");
+    }
+}

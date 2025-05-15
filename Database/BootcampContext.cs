@@ -59,7 +59,6 @@ public partial class BootcampContext : DbContext
         {
             entity.ToTable("BalanceReplenishment");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Amount).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.IdClient).HasColumnName("Id_Client");
@@ -77,7 +76,6 @@ public partial class BootcampContext : DbContext
         {
             entity.ToTable("Client");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Balance).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.IdUser).HasColumnName("Id_User");
 
@@ -92,7 +90,6 @@ public partial class BootcampContext : DbContext
 
         modelBuilder.Entity<ClientsMembership>(entity =>
         {
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -108,7 +105,6 @@ public partial class BootcampContext : DbContext
         {
             entity.ToTable("LoyalityLevel");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(50);
             entity.Property(e => e.RequiredSpend).HasColumnType("decimal(10, 2)");
         });
@@ -117,7 +113,6 @@ public partial class BootcampContext : DbContext
         {
             entity.ToTable("Membership");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(50);
             entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
         });
@@ -126,7 +121,6 @@ public partial class BootcampContext : DbContext
         {
             entity.ToTable("MembershipBuy");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.IdClient).HasColumnName("Id_client");
             entity.Property(e => e.IdMembership).HasColumnName("Id_Membership");
@@ -163,7 +157,6 @@ public partial class BootcampContext : DbContext
         {
             entity.ToTable("Reservation");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.IdSession).HasColumnName("Id_Session");
 
             entity.HasOne(d => d.IdSessionNavigation).WithMany(p => p.Reservations)
@@ -179,7 +172,6 @@ public partial class BootcampContext : DbContext
         {
             entity.ToTable("ReservationStatus");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(50);
         });
 
@@ -192,16 +184,13 @@ public partial class BootcampContext : DbContext
             entity.Property(e => e.Role1)
                 .HasMaxLength(5)
                 .HasColumnName("Role");
-            entity.Property(e => e.Name)
-                .HasMaxLength(10)
-                .IsFixedLength();
+            entity.Property(e => e.Name).HasMaxLength(30);
         });
 
         modelBuilder.Entity<Session>(entity =>
         {
             entity.ToTable("Session");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.IdClient).HasColumnName("Id_Client");
             entity.Property(e => e.IdWorkStation).HasColumnName("Id_WorkStation");
             entity.Property(e => e.StartTime)
@@ -221,7 +210,6 @@ public partial class BootcampContext : DbContext
         {
             entity.ToTable("SessionPayment");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CreatedAt).HasColumnType("datetime");
             entity.Property(e => e.IdSession).HasColumnName("Id_Session");
             entity.Property(e => e.TotalCost).HasColumnType("decimal(10, 2)");
@@ -235,7 +223,6 @@ public partial class BootcampContext : DbContext
         {
             entity.ToTable("User");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -253,7 +240,6 @@ public partial class BootcampContext : DbContext
         {
             entity.ToTable("WorkStation");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Cost).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.IdStatus).HasColumnName("Id_Status");
 
@@ -270,7 +256,6 @@ public partial class BootcampContext : DbContext
         {
             entity.ToTable("WorkStationStatus");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(50);
         });
 
@@ -278,7 +263,6 @@ public partial class BootcampContext : DbContext
         {
             entity.ToTable("WorkStationType");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Name).HasMaxLength(50);
         });
 

@@ -1,30 +1,100 @@
 ﻿@using System.Text.RegularExpressions
 <style>
-    input{
-    background: transparent;
-    border: none;
+    input {
+        background: transparent;
+        border: none;
+        color: antiquewhite;
+        width: 100%;
+        height: 100%;
+        white-space: nowrap;
+        overflow: hidden; 
+        text-overflow: ellipsis;
     }
 
-    input:focus {
-    outline: none; 
-    border: none; 
-    background: transparent;
+        input:focus {
+            outline: none;
+            border: none;
+            background: transparent;
+        }
+
+    .input-container {
+        position: relative;
+        min-width: 220px;
+        width: 220px; 
+    }
+
+    .input-wrapper {
+        display: flex;
+        align-items: center;
+        height: 48px;
+        overflow: hidden;
+    }
+
+    .label {
+        position: absolute;
+        left: 12px;
+        top: -6px;
+        background: var(--Background, #34343C);
+        padding: 0 4px;
+        color: antiquewhite;
+        font-size: 12px;
+        font-family: Roboto;
+        font-weight: 400;
+        line-height: 16px;
+        letter-spacing: 0.40px;
+        z-index: 1;
+    }
+
+    .input-field {
+        flex: 1;
+        padding: 0 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 </style>
 
-<div style="width: 220px; flex-direction: column; display: inline-flex">
-    <div style="align-self: stretch; border-radius: 4px; outline: 1px var(--Gold, #FBD61C) solid; display: flex">
-        <div style="align-self: stretch; flex: 1 1 0; padding-left: 16px; display: inline-flex">
-            <div style="flex: 1 1 0; height: 48px; padding-top: 4px; padding-bottom: 4px; position: relative; ">
-                <div style="padding-left: 4px; padding-right: 4px; left: -4px; top: -12px; position: absolute; background: var(--Background, #34343C); justify-content: flex-start; align-items: center; display: inline-flex">
-                    <div style="color: antiquewhite; font-size: 12px; font-family: Roboto; font-weight: 400; line-height: 16px; letter-spacing: 0.40px;">@LabelText</div>
-                </div>
-            </div>
+<div class="input-container">
+    <div class="input-wrapper" style="border-radius: 4px; outline: 1px var(--Gold, #FBD61C) solid;">
+        <div class="label">@LabelText</div>
+        <div class="input-field">
+            @if (IsPhoneNumber)
+            {
+                <InputWithPhoneMask @bind-Value="CurrentValue"
+                                    placeholder="+7 (___) ___-__-__"
+                                    style="width: 100%; background: transparent; border: none; color: antiquewhite;" />
+            }
+            else
+            {
+                <input @bind="CurrentValue"
+                       @bind:event="oninput"
+                       placeholder="@Placeholder"
+                       style="width: 100%; background: transparent; border: none; color: antiquewhite;" />
+            }
         </div>
-        <InputWithPhoneMask style="padding: 0 0 0 12px; width: 220px; height: 45px; position: absolute; color: antiquewhite;" @bind-Value="phoneNumber" placeholder="+7 (___) ___-__-__"/>
     </div>
 </div>
-@code{
+
+@code {
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; } = new();
+
     [Parameter] public string LabelText { get; set; } = "Текст";
-    private string phoneNumber;
+    [Parameter] public bool IsPhoneNumber { get; set; } = false;
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "";
+
+    private string CurrentValue
+    {
+        get => Value;
+        set
+        {
+            if (Value != value)
+            {
+                Value = value;
+                ValueChanged.InvokeAsync(value);
+            }
+        }
+    }
 }

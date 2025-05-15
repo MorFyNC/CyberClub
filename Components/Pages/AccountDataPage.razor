@@ -1,0 +1,119 @@
+﻿@page "/AccountData"
+@rendermode InteractiveServer
+@inject BootcampContext _context
+@inject UserService userService
+@inject NavigationManager nav
+
+<PageContainer>
+    <div style="display: flex; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box;">
+        <!-- Центрированный контейнер содержимого -->
+        <div style="display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 400px; gap: 24px;">
+
+            <!-- Логотип -->
+            <Logo></Logo>
+
+            <!-- Заголовок -->
+            <h1 style="color: antiquewhite; text-align: center; width: 200%; margin: 0;
+                    font-size: 1.25rem; line-height: 1.4; padding: 0 10px;">
+                Вам необходимо заполнить некоторые данные чтобы продолжить
+            </h1>
+
+            <!-- Сообщение об ошибке -->
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div style="color: #ff6b6b; background: rgba(255, 107, 107, 0.1);
+                     padding: 10px 15px; border-radius: 4px; width: 200%;
+                     text-align: center; font-size: 0.9rem;">
+                    @errorMessage
+                </div>
+            }
+
+            <!-- Форма -->
+            <div style="display: flex; flex-direction: column; gap: 20px; width: 100%;">
+                <MyTextField LabelText="ФИО" @bind-Value="fullname" style="width: 100%;" />
+                <MyTextField LabelText="Пароль" @bind-Value="password" style="width: 100%;" />
+                <LabledInputDate @bind-Value="birthDate" style="width: 100%;" TValue="DateOnly" Label="Дата рождения" />
+
+                <MyBorders>
+                    <MyButton ButtonText="Сохранить данные"
+                    OnClick="async () => await SaveData()" />
+                </MyBorders>
+            </div>
+        </div>
+    </div>
+</PageContainer>
+
+@code {
+    private string fullname = "";
+    private string password = "";
+    private DateOnly birthDate;
+    private string errorMessage = "";
+
+    protected override void OnInitialized()
+    {
+        if (userService.CurrentUser == null) nav.NavigateTo("/");
+    }
+
+    private async Task SaveData()
+    {
+        if (!ValidateFields(out var message))
+        {
+            errorMessage = message;
+            return;
+        }
+
+        try
+        {
+            var user = userService.CurrentUser;
+            user.Fullname = fullname;
+            user.Password = password;
+            user.BirthDate = birthDate;
+            user.RequireData = false;
+            user.Role = "User";
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            var savedUser = await _context.Users.Where(x => x.Phone == userService.CurrentUser.Phone).FirstOrDefaultAsync();
+
+            var newClient = new Client() { IdUser = savedUser.Id, Balance = 0, Bonuses = 0, LoyalityLevel = 1 };
+
+            await _context.Clients.AddAsync(newClient);
+            await _context.SaveChangesAsync();
+
+            var savedClient = await _context.Clients.Where(x => x.IdUser == savedUser.Id).FirstOrDefaultAsync();
+
+            userService.CurrentUser = savedUser;
+            userService.CurrentClient = savedClient;
+
+            errorMessage = "";
+
+            nav.NavigateTo("/home");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Произошла ошибка при сохранении данных: " + ex.Message;
+        }
+    }
+
+    private bool ValidateFields(out string message)
+    {
+        if (string.IsNullOrWhiteSpace(fullname) || fullname.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length < 3)
+        {
+            message = "Некорректно заполнено поле ФИО!";
+            return false;
+        }
+        if (string.IsNullOrWhiteSpace(password) || password.Length < 6)
+        {
+            message = "Пароль слишком короткий! Минимум 6 символов";
+            return false;
+        }
+        if (birthDate.Year < 1925 || birthDate.Year > 2011)
+        {
+            message = "Некорректно заполнена дата рождения!";
+            return false;
+        }
+        message = "";
+        return true;
+    }
+}

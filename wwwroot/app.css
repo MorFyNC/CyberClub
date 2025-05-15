@@ -49,3 +49,26 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+.my-button {
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    color: antiquewhite;
+    font-size: 14px;
+    font-family: Roboto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0 16px;
+}
+
+    .my-button:hover {
+        opacity: 0.9;
+    }
+
+    .my-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }

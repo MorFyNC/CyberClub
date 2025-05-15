@@ -1,0 +1,149 @@
+﻿@page "/CreateAccountAdmin"
+@rendermode InteractiveServer
+@inject BootcampContext _context
+@inject UserService userService
+@inject NavigationManager nav
+
+<PageContainer>
+    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;  box-sizing: border-box;">
+        <div style="display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 400px; gap: 24px;">
+
+            <Logo></Logo>
+
+            <h1 style="color: antiquewhite; text-align: center; width: 300%; margin: 0;
+                    font-size: 1.25rem; line-height: 1.4; padding: 0 10px;">
+                Заполните данные для нового пользователя
+            </h1>
+
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div style="@((isSuccessMessage) ? "color: #151818;" : "color: #ff6b6b;")
+                     background: @((isSuccessMessage) ? "#FBD61C" : "rgba(255, 107, 107, 0.1)");
+                     padding: 10px 15px; border-radius: 4px; width: 100%;
+                     text-align: center; font-size: 0.9rem;">
+                    @message
+                </div>
+            }
+
+            <div style="display: flex; flex-direction: column; gap: 20px; width: 100%;">
+                <MyTextField LabelText="Номер телефона" IsPhoneNumber="true" @bind-Value="phoneNumber"></MyTextField>
+                @if (!requireData)
+                {
+                    <MyTextField LabelText="ФИО" @bind-Value="fullname" style="width: 100%;" />
+                    <LabledInputDate @bind-Value="birthDate" style="width: 100%;" TValue="DateOnly" Label="Дата рождения" />
+                }
+                <LabledInputCheckbox @bind-Value="requireData" Label="Запросить данные у пользователя"></LabledInputCheckbox>
+
+                <MyBorders>
+                    <MyButton ButtonText="Сохранить"
+                    OnClick="async () => await SaveData()" />
+                </MyBorders>
+                <MyBorders>
+                    <MyButton ButtonText="Назад"
+                    OnClick="Back" />
+                </MyBorders>
+            </div>
+        </div>
+    </div>
+</PageContainer>
+
+@code {
+    private string phoneNumber = "";
+    private string fullname = "";
+    private DateOnly birthDate;
+    private bool requireData = false;
+    private string message = "";
+    private bool isSuccessMessage = false;
+
+    protected override void OnInitialized()
+    {
+        if (!userService.IsAdmin) nav.NavigateTo("/");
+    }
+
+    private void Back()
+    {
+        nav.NavigateTo("/admin");
+    }
+
+    private async Task SaveData()
+    {
+        if (!ValidateFields(out var errorMsg))
+        {
+            message = errorMsg;
+            isSuccessMessage = false;
+            return;
+        }
+
+        try
+        {
+            var user = new User();
+            user.Phone = phoneNumber;
+            if (!requireData)
+            {
+                user.Fullname = fullname;
+                user.BirthDate = birthDate;
+            }
+            user.RequireData = requireData;
+            user.Role = "User";
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            var newClient = new Client()
+                {
+                    IdUser = user.Id,
+                    Balance = 0,
+                    Bonuses = 0,
+                    LoyalityLevel = 1
+                };
+
+            await _context.Clients.AddAsync(newClient);
+            await _context.SaveChangesAsync();
+
+            message = $"Пользователь {phoneNumber} успешно создан!";
+            isSuccessMessage = true;
+
+            phoneNumber = "";
+            fullname = "";
+            birthDate = default;
+            requireData = false;
+
+            StateHasChanged();
+
+            await Task.Delay(5000);
+            message = "";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            message = "Произошла ошибка при сохранении данных: " + ex.Message;
+            isSuccessMessage = false;
+        }
+    }
+
+    private bool ValidateFields(out string message)
+    {
+        if (phoneNumber.Length != 11)
+        {
+            message = "Введен некорректный номер телефона";
+            return false;
+        }
+        if (_context.Users.Any(x => x.Phone == phoneNumber))
+        {
+            message = "Номер телефона занят";
+            return false;
+        }
+        if ((string.IsNullOrWhiteSpace(fullname) || fullname.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length < 3) && !requireData)
+        {
+            message = "Некорректно заполнено поле ФИО! Введите Фамилию Имя Отчество";
+            return false;
+        }
+        if ((birthDate.Year < 1925 || birthDate.Year > 2011) && !requireData)
+        {
+            message = "Некорректно заполнена дата рождения! Допустимый год рождения: 1925-2011";
+            return false;
+        }
+        message = "";
+        return true;
+    }
+}

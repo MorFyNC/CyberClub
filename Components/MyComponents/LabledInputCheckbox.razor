@@ -1,0 +1,55 @@
+﻿<div class="labeled-checkbox-container">
+    <input type="checkbox"
+           checked="@Value"
+           @onchange="HandleChange"
+           class="checkbox-field"
+           id="@Id" />
+    <label class="checkbox-label" for="@Id">@Label</label>
+</div>
+
+<style>
+    /* Стили остаются без изменений */
+    .labeled-checkbox-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        margin-top: 12px;
+    }
+
+    .checkbox-label {
+        color: antiquewhite;
+        font-size: 14px;
+        font-family: Roboto;
+        cursor: pointer;
+    }
+
+    .checkbox-field {
+        width: 16px;
+        height: 16px;
+        margin: 0;
+        accent-color: var(--Gold, #FBD61C);
+        cursor: pointer;
+    }
+
+        .checkbox-field:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(251, 214, 28, 0.3);
+        }
+</style>
+
+@code {
+    private string Id = Guid.NewGuid().ToString("N");
+
+    [Parameter] public string Label { get; set; } = "Подтвердить";
+    [Parameter] public bool Value { get; set; }
+    [Parameter] public EventCallback<bool> ValueChanged { get; set; }
+
+    private async Task HandleChange(ChangeEventArgs e)
+    {
+        if (e.Value is bool newValue)
+        {
+            await ValueChanged.InvokeAsync(newValue);
+        }
+    }
+}
