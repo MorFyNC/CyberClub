@@ -1,5 +1,10 @@
-﻿<div style="width: 110px;">
-    <img style="width: 100%; height: auto; aspect-ratio: 220/348;"
+﻿<div style="@Style">
+    <img style="width: 100%; height: auto; aspect-ratio: 220/348; object-fit: contain; max-width: 100%"
          src="favicon.png"
          alt="Логотип" />
 </div>
+
+@code {
+    [Parameter]
+    public string Style { get; set; } = "width: 165px; display: inline-block";
+}

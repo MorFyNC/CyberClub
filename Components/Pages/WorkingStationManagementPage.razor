@@ -1,0 +1,329 @@
+﻿@page "/WorkingStationsManagement"
+@rendermode InteractiveServer
+@inject BootcampContext context
+@inject NavigationManager nav
+
+<style>
+    rect:hover {
+    cursor: pointer;
+    }
+
+    .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    }
+
+    .modal-content {
+    background: #151818;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 500px;
+    justify-items: center;
+    align-items: center;
+    }
+</style>
+
+<PageContainer>
+    <div style="display: flex; flex-direction: column; justify-content: center; align-items:center; height: 100vh; width: 100vw">
+        <h3 style="color: antiquewhite">Управление рабочими станциями</h3>
+        <div style="display: flex; height: 75%; width: 75%; align-content: center; justify-content: center;">
+            <InteractiveMap SelectWorkStation="SelectArea"></InteractiveMap>
+        </div>
+        <MyBorders>
+            <MyButton ButtonText="Назад" OnClick="Back"></MyButton>
+        </MyBorders>
+
+    </div>
+
+
+
+</PageContainer>
+
+@if (isWorkStationExisting == false && !isCreatingWorkStation)
+{
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="align-self: center; color: antiquewhite">Внимание!</h3>
+            <p style="color: antiquewhite; align-self: center;">Рабочая станция не найдена.</p>
+
+            <div style="display: flex; flex-direction: row; justify-items: center; align-items: center; gap: 20px;">
+                <MyBorders>
+                    <MyButton ButtonText="Добавить рабочую станцию" OnClick="CreateWorkStation" AdditionalStyles="align-self: center; "></MyButton>
+                </MyBorders>
+                <MyBorders>
+                    <MyButton ButtonText="Закрыть" OnClick="ClearSelected" AdditionalStyles="align-self: center; "></MyButton>
+                </MyBorders>
+            </div>
+        </div>
+    </div>
+}
+else if(isCreatingWorkStation && !succesfullyCreated) {
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h4 style="color: antiquewhite">Создание рабочей станции</h4>
+
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div style="display: flex; flex-direction: column; gap: 20px; align-items: center;">
+
+                    @if(!string.IsNullOrEmpty(errorMessage)) {
+                        <div style="color: #ff6b6b;
+                             background: rgba(255, 107, 107, 0.1);
+                             padding: 10px 15px; border-radius: 4px; width: 100%;
+                             text-align: center; font-size: 0.9rem;">
+                            @errorMessage
+                        </div>
+                    }
+
+                    <MyTextField LabelText="Цена" @bind-Value="cost"></MyTextField>
+                    <div style="display: flex; flex-direction: row; gap: 20px">
+                        <LabledInputCheckbox Label="PS5" @bind-Value="isPS5"></LabledInputCheckbox>
+                    </div>
+                    <MyTextField LabelText="Описание" style="height: 100px;" isTextArea="true" @bind-Value="description"></MyTextField>
+                </div>
+
+                <div style="display: flex; flex-direction: row; justify-items: center; align-items: center; gap: 20px;">
+                    <MyBorders>
+                        <MyButton ButtonText="Отмена" OnClick="ClearSelected"></MyButton>
+                    </MyBorders>
+                    <MyBorders>
+                        <MyButton ButtonText="Сохранить" OnClick="SaveChanges"></MyButton>
+                    </MyBorders>
+                </div>
+            </div>
+        </div>
+    </div>
+} else if(succesfullyCreated) {
+    <div class="modal-overlay">
+        <div class="modal-content" style="gap: 20px;">
+            <h4 style="color: antiquewhite">Рабочая станция успешно добавлена</h4>
+
+            <MyBorders>
+                <MyButton ButtonText="Ок" OnClick="ClearSelected"></MyButton>
+            </MyBorders>
+        </div>
+    </div>
+}
+
+@if(isWorkStationExisting == true && isUpdating != true) {
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="align-self: center; color: antiquewhite">Выберите действие</h3>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div style="color: #ff6b6b;
+                             background: rgba(255, 107, 107, 0.1);
+                             padding: 10px 15px; border-radius: 4px; width: 100%;
+                             text-align: center; font-size: 0.9rem;">
+                    @errorMessage
+                </div>
+            }
+
+            <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; gap: 20px;">
+                <MyBorders>
+                    <MyButton ButtonText="Создать бронь на эту станцию" OnClick="CreateReservation" AdditionalStyles="align-self: center; "></MyButton>
+                </MyBorders>
+                <MyBorders>
+                    <MyButton ButtonText="@(selectedWorkStation?.IsBlocked == true ? "Разблокировать рабочую станцию" : "Заблокировать рабочую станцию")"
+                    OnClick="SwitchBlockStation"
+                    AdditionalStyles="align-self: center;" />
+                </MyBorders>
+                <MyBorders>
+                    <MyButton ButtonText="Изменить рабочую станцию" OnClick="UpdateWorkStation" AdditionalStyles="align-self: center; "></MyButton>
+                </MyBorders>
+                <MyBorders>
+                    <MyButton ButtonText="Закрыть" OnClick="ClearSelected" AdditionalStyles="align-self: center; "></MyButton>
+                </MyBorders>
+            </div>
+        </div>
+    </div>
+} else if(isUpdating == true && !succesfullyUpdated) {
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h4 style="color: antiquewhite">Изменение рабочей станции</h4>
+
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div style="display: flex; flex-direction: column; gap: 20px; align-items: center;">
+
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div style="color: #ff6b6b;
+                             background: rgba(255, 107, 107, 0.1);
+                             padding: 10px 15px; border-radius: 4px; width: 100%;
+                             text-align: center; font-size: 0.9rem;">
+                            @errorMessage
+                        </div>
+                    }
+
+                    <MyTextField LabelText="Цена" @bind-Value="cost"></MyTextField>
+                    <div style="display: flex; flex-direction: row; gap: 20px">
+                        <LabledInputCheckbox Label="PS5" @bind-Value="isPS5"></LabledInputCheckbox>
+                    </div>
+                    <MyTextField LabelText="Описание" style="height: 100px;" isTextArea="true" @bind-Value="description"></MyTextField>
+                </div>
+
+                <div style="display: flex; flex-direction: row; justify-items: center; align-items: center; gap: 20px;">
+                    <MyBorders>
+                        <MyButton ButtonText="Отмена" OnClick="ClearSelected"></MyButton>
+                    </MyBorders>
+                    <MyBorders>
+                        <MyButton ButtonText="Сохранить" OnClick="SaveChanges"></MyButton>
+                    </MyBorders>
+                </div>
+            </div>
+        </div>
+    </div>
+} else if(isUpdating == true && succesfullyUpdated) {
+    <div class="modal-overlay">
+        <div class="modal-content" style="gap: 20px;">
+            <h4 style="color: antiquewhite">Рабочая станция успешно изменена</h4>
+
+            <MyBorders>
+                <MyButton ButtonText="Ок" OnClick="ClearSelected"></MyButton>
+            </MyBorders>
+        </div>
+    </div>
+} else if(isWorkStationExisting == true && isCreatingReservation) {
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h4 style="color: antiquewhite">Создание брони</h4>
+            <
+        </div>
+    </div>
+}
+
+@code {
+    private bool? isWorkStationExisting;
+    private bool isCreatingWorkStation = false;
+    private bool succesfullyCreated = false;
+    private bool? isUpdating;
+    private bool succesfullyUpdated = false;
+    private bool isCreatingReservation = false;
+
+    private WorkStation? selectedWorkStation;
+    private string selectedWorkStationId = "";
+
+    private string errorMessage = "";
+
+    private bool isPS5 = false;
+    private string cost;
+    private string description;
+
+    private async void SelectArea(int workStationId)
+    {
+        selectedWorkStationId = workStationId.ToString();
+        WorkStation workStation = await context.WorkStations.Where(x => x.Id == workStationId).FirstOrDefaultAsync();
+        if(workStation == null) {
+            isWorkStationExisting = false;
+            selectedWorkStation = new WorkStation() { Id = workStationId };
+            StateHasChanged();
+        }
+        else {
+            cost = workStation.Cost.ToString();
+            isPS5 = workStation.WorkStationType == 2;
+            description = workStation.Description;
+
+            isWorkStationExisting = true;
+            selectedWorkStation = workStation;
+            StateHasChanged();
+        }
+    }
+
+    private void ClearSelected() {
+        selectedWorkStation = null;
+        isWorkStationExisting = null;
+        isCreatingWorkStation = false;
+        succesfullyCreated = false;
+        isUpdating = null;
+        succesfullyUpdated = false;
+        description = "";
+        isPS5 = false;
+        errorMessage = "";
+        isCreatingReservation = false;
+    }
+
+    private void Back() {
+        nav.NavigateTo("/admin");
+    }
+
+    #region CreatingNewWorkStation
+
+    private void CreateWorkStation() {
+        isCreatingWorkStation = true;
+    }
+
+    private async void SaveChanges() {
+        var isCostConvertable = decimal.TryParse(cost, NumberStyles.Any, CultureInfo.CurrentCulture, out decimal convertedCost);
+        if(string.IsNullOrEmpty(cost)) {
+            errorMessage = "Не заполнено поле цены";
+            return;
+        }
+        else if(!isCostConvertable) {
+            errorMessage = "Некорректно заполнена цена";
+            return;
+        }
+
+        selectedWorkStation.WorkStationType = isPS5 ? 2 : 1;
+        selectedWorkStation.Cost = convertedCost;
+        selectedWorkStation.Description = description;
+        selectedWorkStation.IdStatus = isWorkStationExisting == true ? selectedWorkStation.IdStatus : 2;
+        selectedWorkStation.IsBlocked = false;
+
+        try {
+            if(isWorkStationExisting == true) {
+                context.WorkStations.Update(selectedWorkStation);
+                await context.SaveChangesAsync();
+                succesfullyUpdated = true;
+                StateHasChanged();
+            }
+            else {
+                await context.WorkStations.AddAsync(selectedWorkStation);
+                await context.SaveChangesAsync();
+                succesfullyCreated = true;
+                StateHasChanged();
+
+            }
+
+            errorMessage = "";
+        }
+        catch (Exception e) {
+            errorMessage = e.Message;
+        }
+    }
+
+    #endregion
+
+    #region WorkStationActions
+
+    private void UpdateWorkStation() {
+        isUpdating = true;
+    }
+
+
+    private async void SwitchBlockStation() {
+        try {
+            selectedWorkStation.IsBlocked = !selectedWorkStation.IsBlocked;
+            context.WorkStations.Update(selectedWorkStation);
+            await context.SaveChangesAsync();
+            StateHasChanged();
+        }
+        catch (Exception ex) {
+            errorMessage = ex.Message;
+            selectedWorkStation.IsBlocked = !selectedWorkStation.IsBlocked;
+            StateHasChanged();
+        }
+    }
+
+    private void CreateReservation() {
+        isCreatingReservation = true;
+    }
+    #endregion
+}

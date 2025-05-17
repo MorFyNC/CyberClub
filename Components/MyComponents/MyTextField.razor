@@ -1,32 +1,32 @@
 ﻿@using System.Text.RegularExpressions
 <style>
-    input {
+    input, textarea {
         background: transparent;
         border: none;
         color: antiquewhite;
         width: 100%;
-        height: 100%;
         white-space: nowrap;
         overflow: hidden; 
         text-overflow: ellipsis;
+        font-family: inherit;
     }
 
-        input:focus {
-            outline: none;
-            border: none;
-            background: transparent;
-        }
+    input:focus, textarea:focus {
+        outline: none;
+        border: none;
+        background: transparent;
+    }
 
     .input-container {
         position: relative;
         min-width: 220px;
-        width: 220px; 
+        width: fit-content;
     }
 
     .input-wrapper {
         display: flex;
         align-items: center;
-        height: 48px;
+        min-height: 48px;
         overflow: hidden;
     }
 
@@ -47,10 +47,15 @@
 
     .input-field {
         flex: 1;
-        padding: 0 12px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        padding: 12px;
+        min-width: 220px;
+    }
+
+
+    textarea {
+        white-space: normal;
+        overflow-y: auto; 
+        min-height: 48px; 
     }
 </style>
 
@@ -61,15 +66,21 @@
             @if (IsPhoneNumber)
             {
                 <InputWithPhoneMask @bind-Value="CurrentValue"
-                                    placeholder="+7 (___) ___-__-__"
-                                    style="width: 100%; background: transparent; border: none; color: antiquewhite;" />
+                placeholder="+7 (___) ___-__-__"
+                style="width: 100%; background: transparent; border: none; color: antiquewhite;" />
             }
-            else
+            else if(!isTextArea)
             {
                 <input @bind="CurrentValue"
-                       @bind:event="oninput"
+                @bind:event="oninput"
+                placeholder="@Placeholder"
+                style="width: 100%; background: transparent; border: none; color: antiquewhite;" />
+            }
+            else {
+                <textarea @bind="CurrentValue"
                        placeholder="@Placeholder"
-                       style="width: 100%; background: transparent; border: none; color: antiquewhite;" />
+                       style="width: 100%; background: transparent; border: none; color: antiquewhite;"
+                       @oninput="HandleTextareaInput" />
             }
         </div>
     </div>
@@ -79,6 +90,7 @@
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; } = new();
 
+    [Parameter] public bool isTextArea { get; set; } = false;
     [Parameter] public string LabelText { get; set; } = "Текст";
     [Parameter] public bool IsPhoneNumber { get; set; } = false;
     [Parameter] public string Value { get; set; } = "";
@@ -96,5 +108,10 @@
                 ValueChanged.InvokeAsync(value);
             }
         }
+    }
+
+    private void HandleTextareaInput(ChangeEventArgs e)
+    {
+        CurrentValue = e.Value?.ToString() ?? "";
     }
 }

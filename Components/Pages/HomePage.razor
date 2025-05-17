@@ -3,8 +3,21 @@
 @inject UserService userService
 
 <PageContainer>
-    <div style="display:flex; justify-content:center; align-content: center; height: 100%; width:100%;">
-        <h1 style="color: antiquewhite; text-align: center; width: 200%; margin: 0; font-size: 1.5rem;">Домашняя страница пользователя</h1>
+    <div style="display: flex; flex-direction: column; height: 100vh; width: 100%; overflow: hidden;">
+        <div style="display: flex; flex-direction: row; height: 45px; min-height: 45px; background: #151818; align-items: center;">
+            <Logo style="width: 25px; margin-left: 7px; object-fit: contain;"></Logo>
+            <h3 style="margin: 0 auto; color: #FBD61C; text-align: center; flex-grow: 1;">Bootcamp</h3>
+        </div>
+
+        <div style="flex: 1; display: flex; justify-content: center; align-items: center; width: 100%;">
+            <div style="height: 75%; width: 75%; display: flex; flex-direction: column; background: #151818; border-radius: 100px;">
+                <h1 style="color: antiquewhite; text-align: center; width: 100%; margin: 1rem 0; font-size: 1.5rem;">
+                    Домашняя страница пользователя
+                </h1>
+                <div style="flex: 1; display: flex; justify-content: center; align-items: center;">
+                </div>
+            </div>
+        </div>
     </div>
 </PageContainer>
 

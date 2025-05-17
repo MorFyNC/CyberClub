@@ -5,12 +5,9 @@
 @inject NavigationManager nav
 
 <PageContainer>
-    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;  box-sizing: border-box;">
-        <div style="display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 400px; gap: 24px;">
-
-            <Logo></Logo>
-
-            <h1 style="color: antiquewhite; text-align: center; width: 300%; margin: 0;
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;  box-sizing: border-box; height: 100%">
+        <div style="display: flex; flex-direction: column; width: 100%; max-width: 400px; gap: 24px; ">
+            <h1 style="color: antiquewhite; text-align: center; width: 100%; margin: 0;
                     font-size: 1.25rem; line-height: 1.4; padding: 0 10px;">
                 Заполните данные для нового пользователя
             </h1>
@@ -25,14 +22,14 @@
                 </div>
             }
 
-            <div style="display: flex; flex-direction: column; gap: 20px; width: 100%;">
+            <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; gap: 20px; width: 100%;">
                 <MyTextField LabelText="Номер телефона" IsPhoneNumber="true" @bind-Value="phoneNumber"></MyTextField>
                 @if (!requireData)
                 {
                     <MyTextField LabelText="ФИО" @bind-Value="fullname" style="width: 100%;" />
                     <LabledInputDate @bind-Value="birthDate" style="width: 100%;" TValue="DateOnly" Label="Дата рождения" />
                 }
-                <LabledInputCheckbox @bind-Value="requireData" Label="Запросить данные у пользователя"></LabledInputCheckbox>
+                <LabledInputCheckbox @bind-isChecked="requireData" Label="Запросить данные у пользователя"></LabledInputCheckbox>
 
                 <MyBorders>
                     <MyButton ButtonText="Сохранить"

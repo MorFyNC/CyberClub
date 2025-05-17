@@ -3,24 +3,33 @@
 @inject UserService userService
 @rendermode InteractiveServer
 <PageContainer>
-    <div style="display: flex; justify-content: center; align-items: start; width: 100%; margin-top: 10px; ">
-        <h1 style="color: antiquewhite; text-align: center; width: 200%; margin: 0; font-size: 1.5rem;">
+    <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; width: 100%; height: 100%; margin-top: 10px; ">
+        <h1 style="color: antiquewhite; text-align: center; width: 100%; margin-top: 20px; font-size: 1.5rem;">
             Панель администратора
         </h1>
+
+        <div style="display: flex; justify-content: center; align-items: center; height: 100%; width: 100%; flex-direction: column; gap: 20px;">
+            <MyBorders>
+                <MyButton ButtonText="Добавить пользователя" OnClick="AddNewUser"></MyButton>
+            </MyBorders>
+            <MyBorders>
+                <MyButton ButtonText="Управление рабочими станциями" OnClick="WorkingStations"></MyButton>
+            </MyBorders>
+            <MyBorders>
+                <MyButton ButtonText="Выход" OnClick="Logout"></MyButton>
+            </MyBorders>
+        </div>
     </div>
-    <div style="display: flex; justify-content: center; align-items: start; height: 100%; width: 100%; flex-direction: column; gap: 20px;">
-        <MyBorders>
-            <MyButton ButtonText="Добавить пользователя" OnClick="AddNewUser"></MyButton>
-        </MyBorders>
-        <MyBorders>
-            <MyButton ButtonText="Выход" OnClick="Logout"></MyButton>
-        </MyBorders>
-    </div>
+
 </PageContainer>
 
 @code {
     private void AddNewUser() {
         nav.NavigateTo("/CreateAccountAdmin");
+    }
+
+    private void WorkingStations() {
+        nav.NavigateTo("/WorkingStationsManagement");
     }
 
     protected override void OnInitialized()
