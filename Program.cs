@@ -2,7 +2,6 @@ using CyberClub.Classes;
 using CyberClub.Components;
 using CyberClub.Database;
 
-//using CyberClub.Database;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +12,8 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddDbContext<BootcampContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddHostedService<SessionBackgroundService>();
 
 builder.Services.AddSingleton<UserService>();
 

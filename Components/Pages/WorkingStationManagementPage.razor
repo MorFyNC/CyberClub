@@ -82,11 +82,11 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
                         </div>
                     }
 
-                    <MyTextField LabelText="Цена" @bind-Value="cost"></MyTextField>
+                    <MyTextField Background="#151818" LabelText="Цена" @bind-Value="cost"></MyTextField>
                     <div style="display: flex; flex-direction: row; gap: 20px">
                         <LabledInputCheckbox Label="PS5" @bind-Value="isPS5"></LabledInputCheckbox>
                     </div>
-                    <MyTextField LabelText="Описание" style="height: 100px;" isTextArea="true" @bind-Value="description"></MyTextField>
+                    <MyTextField Background="#151818" LabelText="Описание" style="height: 100px;" isTextArea="true" @bind-Value="description"></MyTextField>
                 </div>
 
                 <div style="display: flex; flex-direction: row; justify-items: center; align-items: center; gap: 20px;">
@@ -117,17 +117,16 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
         <div class="modal-content">
             <h3 style="align-self: center; color: antiquewhite">Выберите действие</h3>
 
-            @if (!string.IsNullOrEmpty(errorMessage))
-            {
-                <div style="color: #ff6b6b;
+            <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; gap: 20px;">
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div style="color: #ff6b6b;
                              background: rgba(255, 107, 107, 0.1);
                              padding: 10px 15px; border-radius: 4px; width: 100%;
                              text-align: center; font-size: 0.9rem;">
-                    @errorMessage
-                </div>
-            }
-
-            <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; gap: 20px;">
+                        @errorMessage
+                    </div>
+                }
                 <MyBorders>
                     <MyButton ButtonText="Создать бронь на эту станцию" OnClick="CreateReservation" AdditionalStyles="align-self: center; "></MyButton>
                 </MyBorders>
@@ -145,7 +144,8 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
             </div>
         </div>
     </div>
-} else if(isUpdating == true && !succesfullyUpdated) {
+} 
+@if(isUpdating == true && !succesfullyUpdated) {
     <div class="modal-overlay">
         <div class="modal-content">
             <h4 style="color: antiquewhite">Изменение рабочей станции</h4>
@@ -163,11 +163,11 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
                         </div>
                     }
 
-                    <MyTextField LabelText="Цена" @bind-Value="cost"></MyTextField>
+                    <MyTextField Background="#151818" LabelText="Цена" @bind-Value="cost"></MyTextField>
                     <div style="display: flex; flex-direction: row; gap: 20px">
                         <LabledInputCheckbox Label="PS5" @bind-Value="isPS5"></LabledInputCheckbox>
                     </div>
-                    <MyTextField LabelText="Описание" style="height: 100px;" isTextArea="true" @bind-Value="description"></MyTextField>
+                    <MyTextField Background="#151818" LabelText="Описание" style="height: 100px;" isTextArea="true" @bind-Value="description"></MyTextField>
                 </div>
 
                 <div style="display: flex; flex-direction: row; justify-items: center; align-items: center; gap: 20px;">
@@ -181,7 +181,8 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
             </div>
         </div>
     </div>
-} else if(isUpdating == true && succesfullyUpdated) {
+} 
+@if(isUpdating == true && succesfullyUpdated) {
     <div class="modal-overlay">
         <div class="modal-content" style="gap: 20px;">
             <h4 style="color: antiquewhite">Рабочая станция успешно изменена</h4>
@@ -191,11 +192,84 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
             </MyBorders>
         </div>
     </div>
-} else if(isWorkStationExisting == true && isCreatingReservation) {
+}
+@if(isWorkStationExisting == true && isCreatingReservation) {
     <div class="modal-overlay">
         <div class="modal-content">
             <h4 style="color: antiquewhite">Создание брони</h4>
-            <
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div style="color: #ff6b6b;
+                             background: rgba(255, 107, 107, 0.1);
+                             padding: 10px 15px; border-radius: 4px; width: 100%;
+                             text-align: center; font-size: 0.9rem;">
+                    @errorMessage
+                </div>
+            }
+            <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; justify-items: center; height: 40vh">
+                <MyTextField Background="#151818" LabelText="Пользователь" @bind-Value="userPhone" IsPhoneNumber="true"></MyTextField>
+
+                @if (!instantReservation)
+                {
+                    <LabledInputDate Background="#151818" TValue="DateTime" Label="Дата начала брони" @bind-Value="reservationStartDate"></LabledInputDate>
+                    <MyTimePicker Background="#151818" TValue="TimeOnly" @bind-Value="reservationStartTime" Label="Время начала брони"></MyTimePicker>
+                }
+
+                <MyTextField LabelText="Количество часов" Background="#151818" @bind-Value="hoursCount"></MyTextField>
+
+                <div style="display: flex; flex-direction: column; height: 100%;">
+                    <div style="flex: 1;"></div> 
+                    <LabledInputCheckbox Label="Моментальная бронь"
+                    @bind-Value="instantReservation">
+                    </LabledInputCheckbox>
+                </div>
+
+                <div style="display: flex; flex-direction: row; gap:20px; justify-items: center; align-items: end; flex: 1">
+                    <MyBorders>
+                        <MyButton ButtonText="Отмена" OnClick="ClearSelected"></MyButton>
+                    </MyBorders>
+                    <MyBorders>
+                        <MyButton ButtonText="Забронировать" OnClick="CheckReservationFields"></MyButton>
+                    </MyBorders>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@if (user != null && !succesfullyPaid) {
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h4 style="color: antiquewhite">Оплата</h4>
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div style="color: #ff6b6b;
+                             background: rgba(255, 107, 107, 0.1);
+                             padding: 10px 15px; border-radius: 4px; width: 100%;
+                             text-align: center; font-size: 0.9rem;">
+                    @errorMessage
+                </div>
+            }
+            <div style="display: flex; align-items: center; justify-items: center; flex-direction: column">
+
+                <div style="display: flex; flex-direction: row; gap: 20px; justify-items: center; align-items: end; flex: 1">
+                    <MyBorders>
+                        <MyButton ButtonText="Провести оплату" OnClick="SaveReservation"></MyButton>
+                    </MyBorders>
+                    <MyBorders>
+                        <MyButton ButtonText="Отмена" OnClick="ClearSelected"></MyButton>
+                    </MyBorders>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@if(succesfullyPaid) {
+    <div class="modal-overlay" >
+        <div class="modal-content" style="gap: 20px">
+            <h4 style="color: antiquewhite">Рабочая станция успешно забронирована</h4>
+            <MyBorders>
+                <MyButton ButtonText="Ок" OnClick="ClearSelected"></MyButton>
+            </MyBorders>
         </div>
     </div>
 }
@@ -207,6 +281,7 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
     private bool? isUpdating;
     private bool succesfullyUpdated = false;
     private bool isCreatingReservation = false;
+    private bool succesfullyPaid = false;
 
     private WorkStation? selectedWorkStation;
     private string selectedWorkStationId = "";
@@ -216,6 +291,16 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
     private bool isPS5 = false;
     private string cost;
     private string description;
+
+    private string userPhone;
+    private string hoursCount;
+    private bool instantReservation = true;
+    private DateTime reservationStartDate = DateTime.Now;
+    private TimeOnly reservationStartTime = TimeOnly.FromDateTime(DateTime.Now);
+
+    private User user = null;
+    private Client client = null;
+    private int hoursCountInt;
 
     private async void SelectArea(int workStationId)
     {
@@ -248,6 +333,13 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
         isPS5 = false;
         errorMessage = "";
         isCreatingReservation = false;
+        userPhone = "";
+        instantReservation = true;
+        reservationStartTime = TimeOnly.FromDateTime(DateTime.Now);
+        reservationStartDate = DateTime.Now;
+        user = null;
+        client = null;
+        succesfullyPaid = false;
     }
 
     private void Back() {
@@ -257,10 +349,12 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
     #region CreatingNewWorkStation
 
     private void CreateWorkStation() {
+        errorMessage = "";
         isCreatingWorkStation = true;
     }
 
     private async void SaveChanges() {
+        errorMessage = "";
         var isCostConvertable = decimal.TryParse(cost, NumberStyles.Any, CultureInfo.CurrentCulture, out decimal convertedCost);
         if(string.IsNullOrEmpty(cost)) {
             errorMessage = "Не заполнено поле цены";
@@ -289,13 +383,13 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
                 await context.SaveChangesAsync();
                 succesfullyCreated = true;
                 StateHasChanged();
-
             }
 
             errorMessage = "";
         }
         catch (Exception e) {
             errorMessage = e.Message;
+            StateHasChanged();
         }
     }
 
@@ -304,11 +398,13 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
     #region WorkStationActions
 
     private void UpdateWorkStation() {
+        errorMessage = "";
         isUpdating = true;
     }
 
 
     private async void SwitchBlockStation() {
+        errorMessage = "";
         try {
             selectedWorkStation.IsBlocked = !selectedWorkStation.IsBlocked;
             context.WorkStations.Update(selectedWorkStation);
@@ -322,8 +418,103 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
         }
     }
 
-    private void CreateReservation() {
+    private async void CreateReservation() {
+        errorMessage = "";
+        var status = await context.WorkStationStatuses.Where(x => x.Id == selectedWorkStation.IdStatus).FirstOrDefaultAsync();
+        if(status.CanReserve != true || selectedWorkStation.IsBlocked == true) {
+            errorMessage = "Данную рабочую станцию нельзя забронировать на данный момент";
+            StateHasChanged();
+            return;
+        }
         isCreatingReservation = true;
+        StateHasChanged();
+    }
+
+    private async void CheckReservationFields() {
+        errorMessage = "";
+
+        if(string.IsNullOrEmpty(userPhone) || userPhone.Length != 11) {
+            errorMessage = "Некорректный номер телефона";
+            StateHasChanged();
+            return;
+        }
+        if(!instantReservation && (reservationStartDate.Day < DateTime.Now.Day || reservationStartTime < TimeOnly.FromDateTime(DateTime.Now))) {
+            errorMessage = "Некорректная дата/время";
+            StateHasChanged();
+            return;
+        }
+        if(!Int32.TryParse(hoursCount, out hoursCountInt)) {
+            errorMessage = "Некорректно введено количество часов";
+            StateHasChanged();
+            return;
+        }
+
+        var user = await context.Users.Where(x => x.Phone == userPhone).FirstOrDefaultAsync();
+
+        if(user == null) {
+            errorMessage = "Аккаунта с данным номером телефона не существует";
+            StateHasChanged();
+            return;
+        }
+
+        var client = await context.Clients.Where(x => x.IdUser == user.Id).FirstOrDefaultAsync();
+        this.user = user;
+        this.client = client;
+        StateHasChanged();
+    }
+
+    private async void SaveReservation()
+    {
+        errorMessage = "";
+        using var transaction = await context.Database.BeginTransactionAsync();
+        try
+        {
+            Session session = new Session()
+            {
+                IdClient = client.Id,
+                HoursCount = hoursCountInt,
+                IdWorkStation = selectedWorkStation.Id,
+                StartTime = new DateTime(reservationStartDate.Year, reservationStartDate.Month, reservationStartDate.Day, reservationStartTime.Hour, reservationStartTime.Minute, reservationStartTime.Second),
+            };
+
+            context.Sessions.Add(session);
+            await context.SaveChangesAsync();
+
+            SessionPayment sessionPayment = new SessionPayment()
+                {
+                    TotalCost = hoursCountInt * selectedWorkStation.Cost,
+                    BonusesSpent = 0,
+                    HoursFromMembership = 0,
+                    IdSession = session.Id
+                };
+
+            context.SessionPayments.Add(sessionPayment);
+            await context.SaveChangesAsync();
+
+            Reservation reservation = new Reservation()
+            {
+                IdSession = session.Id,
+                ReservationStatus = instantReservation ? 1 : 4,
+            };
+
+
+
+            context.Reservations.Add(reservation);
+            await context.SaveChangesAsync();
+
+            selectedWorkStation.IdStatus = 1;
+            await context.SaveChangesAsync();
+
+            succesfullyPaid = true;
+            await transaction.CommitAsync();
+
+            StateHasChanged();
+        }
+        catch (Exception ex) {
+            errorMessage = ex.Message;
+            StateHasChanged();
+            await transaction.RollbackAsync();
+        }
     }
     #endregion
 }

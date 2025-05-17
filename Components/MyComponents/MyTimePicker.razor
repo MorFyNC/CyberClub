@@ -1,0 +1,96 @@
+﻿@typeparam TValue
+
+<div class="time-input-container">
+    <label class="input-label">@Label</label>
+    <input type="time"
+           value="@TimeString"
+           @oninput="OnTimeInput"
+           class="input-field"
+           @attributes="AdditionalAttributes" />
+</div>
+
+<style>
+    .time-input-container {
+        position: relative;
+        width: 100%;
+        margin-top: 12px;
+    }
+
+    .input-label {
+        position: absolute;
+        top: -8px;
+        left: 12px;
+        background: @Background;
+        padding: 0 4px;
+        color: antiquewhite;
+        font-size: 12px;
+        font-family: Roboto;
+        z-index: 2;
+        pointer-events: none;
+    }
+
+    .input-field {
+        height: 48px;
+        padding: 0 12px;
+        background: transparent;
+        border: 1px solid var(--Gold, #FBD61C);
+        border-radius: 4px;
+        color: antiquewhite;
+        font-family: Roboto;
+        font-size: 14px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+        .input-field:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #FBD61C;
+        }
+</style>
+
+@code {
+    [Parameter] public string Label { get; set; } = "Время";
+    [Parameter] public TValue Value { get; set; }
+    [Parameter] public EventCallback<TValue> ValueChanged { get; set; }
+    [Parameter]
+    public string Background { get; set; } = "#34343C";
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; } = new();
+
+    private string TimeString
+    {
+        get
+        {
+            if (Value == null) return "";
+
+            if (typeof(TValue) == typeof(TimeOnly) ||
+               (Nullable.GetUnderlyingType(typeof(TValue)) == typeof(TimeOnly)))
+            {
+                var time = (TimeOnly)(object)Value;
+                return time.ToString("HH:mm");
+            }
+            return "";
+        }
+        set
+        {
+            if (TimeOnly.TryParse(value, out var time))
+            {
+                var newValue = (TValue)(object)time;
+                ValueChanged.InvokeAsync(newValue);
+            }
+            else if (Nullable.GetUnderlyingType(typeof(TValue)) != null)
+            {
+                ValueChanged.InvokeAsync(default);
+            }
+        }
+    }
+
+    private void OnTimeInput(ChangeEventArgs e)
+    {
+        if (e.Value is string timeString)
+        {
+            TimeString = timeString;
+        }
+    }
+}

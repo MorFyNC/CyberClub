@@ -1,62 +1,64 @@
 ﻿@using System.Text.RegularExpressions
 <style>
+    /* Обновленные стили для вертикального выравнивания */
+    .input-container {
+        position: relative;
+        width: 100%;
+    }
+
+    .input-wrapper {
+        display: flex;
+        align-items: center; /* Вертикальное выравнивание */
+        min-height: 48px;
+        border-radius: 4px;
+        outline: 1px var(--Gold, #FBD61C) solid;
+        width: 100%;
+    }
+
+    .input-field {
+        flex: 1;
+        padding: 12px;
+        width: 100%;
+        display: flex;
+        align-items: center; /* Вертикальное выравнивание */
+        height: 100%; /* Занимает всю высоту */
+    }
+
     input, textarea {
         background: transparent;
         border: none;
         color: antiquewhite;
         width: 100%;
-        white-space: nowrap;
-        overflow: hidden; 
-        text-overflow: ellipsis;
         font-family: inherit;
+        padding: 0; /* Убираем внутренние отступы */
+        line-height: 1.5; /* Межстрочный интервал */
     }
 
-    input:focus, textarea:focus {
-        outline: none;
-        border: none;
-        background: transparent;
-    }
-
-    .input-container {
-        position: relative;
-        min-width: 220px;
-        width: fit-content;
-    }
-
-    .input-wrapper {
-        display: flex;
-        align-items: center;
+    textarea {
+        white-space: normal;
+        overflow-y: auto;
         min-height: 48px;
-        overflow: hidden;
+        resize: none;
     }
 
     .label {
         position: absolute;
         left: 12px;
         top: -6px;
-        background: var(--Background, #34343C);
+        background: #34343C;
         padding: 0 4px;
         color: antiquewhite;
         font-size: 12px;
         font-family: Roboto;
-        font-weight: 400;
-        line-height: 16px;
-        letter-spacing: 0.40px;
         z-index: 1;
     }
 
-    .input-field {
-        flex: 1;
-        padding: 12px;
-        min-width: 220px;
+    textarea:focus,input:focus {
+        border: none;
+        outline: none;
     }
 
 
-    textarea {
-        white-space: normal;
-        overflow-y: auto; 
-        min-height: 48px; 
-    }
 </style>
 
 <div class="input-container">
@@ -78,9 +80,9 @@
             }
             else {
                 <textarea @bind="CurrentValue"
-                       placeholder="@Placeholder"
-                       style="width: 100%; background: transparent; border: none; color: antiquewhite;"
-                       @oninput="HandleTextareaInput" />
+                placeholder="@Placeholder"
+                style="width: 100%; background: transparent; border: none; color: antiquewhite;"
+                @oninput="HandleTextareaInput" />
             }
         </div>
     </div>
@@ -96,6 +98,7 @@
     [Parameter] public string Value { get; set; } = "";
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
     [Parameter] public string Placeholder { get; set; } = "";
+    [Parameter] public string Background { get; set; } = "#34343C";
 
     private string CurrentValue
     {

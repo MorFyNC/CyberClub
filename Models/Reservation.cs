@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace CyberClub.Database;
+namespace CyberClub.Models;
 
 public partial class Reservation
 {

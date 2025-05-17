@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using CyberClub.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CyberClub.Database;
@@ -60,7 +61,9 @@ public partial class BootcampContext : DbContext
             entity.ToTable("BalanceReplenishment");
 
             entity.Property(e => e.Amount).HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.IdClient).HasColumnName("Id_Client");
 
             entity.HasOne(d => d.IdClientNavigation).WithMany(p => p.BalanceReplenishments)
@@ -121,7 +124,9 @@ public partial class BootcampContext : DbContext
         {
             entity.ToTable("MembershipBuy");
 
-            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.IdClient).HasColumnName("Id_client");
             entity.Property(e => e.IdMembership).HasColumnName("Id_Membership");
 
@@ -210,7 +215,9 @@ public partial class BootcampContext : DbContext
         {
             entity.ToTable("SessionPayment");
 
-            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.IdSession).HasColumnName("Id_Session");
             entity.Property(e => e.TotalCost).HasColumnType("decimal(10, 2)");
 
@@ -240,6 +247,7 @@ public partial class BootcampContext : DbContext
         {
             entity.ToTable("WorkStation");
 
+            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Cost).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.IdStatus).HasColumnName("Id_Status");
 
