@@ -169,7 +169,7 @@
                 var clientId = userService.CurrentClient.Id;
 
                 var sessionCashPayments = await tempContext.Sessions
-                    .Where(s => s.IdClient == clientId)
+                    .Where(s => s.IdClient == clientId && s.Reservations.FirstOrDefault().ReservationStatus != ReservationStatus.Cancelled)
                     .SelectMany(s => s.SessionPayments)
                     .Where(sp => sp.HoursFromMembership == null || sp.HoursFromMembership == 0)
                     .SumAsync(sp => sp.TotalCost ?? 0);

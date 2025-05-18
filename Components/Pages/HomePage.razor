@@ -1,6 +1,7 @@
 ﻿@page "/home"
 @inject NavigationManager nav
 @inject UserService userService
+@inject BootcampContext context
 @rendermode InteractiveServer
 
 <PageContainer>
@@ -16,40 +17,691 @@
         </div>
 
         <div style="display: flex; flex-direction: row; height: 100%; width: 100%;">
-            <div style="background: #151818; display: flex; flex-direction: column; width: 25%; height: 100%; align-items: center; outline: 1px #FBD61C solid; z-index: 1000">
-                <h3 style="color: antiquewhite">Текущий абонемент</h3>
+            <div style="background: #151818; display: flex; flex-direction: column; width: 25%; height: 100%; align-items: center; outline: 1px #FBD61C solid; z-index: 1000; padding: 20px;">
+                <h3 style="color: antiquewhite; margin-bottom: 20px;">Абонементы</h3>
+
+                @if (hasMembership)
+                {
+                    <div style="background: rgba(251, 214, 28, 0.1); border: 1px solid #FBD61C; border-radius: 8px; padding: 15px; width: 90%; margin-bottom: 20px;">
+                        <h4 style="color: #FBD61C; margin-bottom: 10px;">Текущий абонемент</h4>
+                        <div style="color: antiquewhite; margin-bottom: 5px;">@activeMembership.Name</div>
+                        <div style="color: antiquewhite; margin-bottom: 5px;">Часов осталось: @clientsMembership.HoursLeft</div>
+                    </div>
+                }
+
+                <h4 style="color: antiquewhite; margin-bottom: 15px;">@(hasMembership ? "Другие абонементы" : "Доступные абонементы")</h4>
+
+                <div style="width: 100%; overflow-y: auto; max-height: 60vh;">
+                    @foreach (var membership in availableMemberships)
+                    {
+                        <div style="background: rgba(21, 24, 24, 0.8); border-left: 4px solid #FBD61C; border-radius: 4px; padding: 12px; margin-bottom: 10px;">
+                            <div style="color: #FBD61C; font-weight: bold; margin-bottom: 5px;">@membership.Name</div>
+                            <div style="color: antiquewhite; margin-bottom: 5px;">@membership.HoursCount часов</div>
+                            <div style="color: antiquewhite; margin-bottom: 10px;">@membership.Price руб.</div>
+                            <MyBorders>
+                                <MyButton ButtonText="Купить" OnClick="() => BuyMembership(membership.Id)"
+                                Style="width: 100%; padding: 5px;"></MyButton>
+                            </MyBorders>
+                        </div>
+                    }
+                </div>
             </div>
             <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; width: 50%; height: 100%;">
                 <h3 style="color: antiquewhite">Бронирование компьютера</h3>
                 <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; gap: 20px; z-index: 100; position: relative; z-index: 10">
                     <InteractiveMap SelectWorkStation="SelectWorkStation"></InteractiveMap>
-                    <h5>@Selected</h5>
                 </div>
             </div>
             <div style="display: flex; flex-direction:column;justify-items: center; align-items: center; width: 25%; height: 100%; outline: 1px #FBD61C solid; background: #151818; z-index: 900;;">
                 <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; height: 50%; width: 100%; outline: 1px #FBD61C solid;">
                     <h3 style="color: antiquewhite">Текущая сессия</h3>
+                    @if (hasActiveSession)
+                    {
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 15px;">
+                            <div style="color: #FBD61C; font-size: 1.2rem;">
+                                Компьютер @currentSession?.IdWorkStationNavigation?.Id
+                            </div>
+                            <div style="font-size: 1.5rem; color: antiquewhite;">
+                                @FormatRemainingTime()
+                            </div>
+                            <div style="color: rgba(250, 235, 215, 0.7);">
+                                Начало: @currentSession?.StartTime?.ToString("HH:mm")
+                            </div>
+                            <div style="color: rgba(250, 235, 215, 0.7);">
+                                Конец: @currentSession?.StartTime?.AddHours(currentSession.HoursCount ?? 0).ToString("HH:mm")
+                            </div>
+                            <MyBorders>
+                                <MyButton ButtonText="Завершить" OnClick="EndSession"></MyButton>
+                            </MyBorders>
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="color: rgba(250, 235, 215, 0.7); padding: 15px;">
+                            Нет активных сессий
+                        </div>
+                    }
                 </div>
                 <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; height: 50%; width: 100%; outline: 1px #FBD61C solid;">
                     <h3 style="color: antiquewhite">Уведомления</h3>
+                    @if (showNotification && upcomingReservation != null)
+                    {
+                        <div style="background: rgba(251, 214, 28, 0.2);
+                    border: 1px solid #FBD61C;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin: 10px;
+                    width: 90%;">
+                            <div style="color: #FBD61C; margin-bottom: 10px;">
+                                Подтвердите бронирование!
+                            </div>
+                            <div style="color: antiquewhite; margin-bottom: 5px;">
+                                Компьютер @upcomingReservation.IdSessionNavigation.IdWorkStationNavigation.Id
+                            </div>
+                            <div style="color: antiquewhite; margin-bottom: 5px;">
+                                Начало: @upcomingReservation.IdSessionNavigation.StartTime?.ToString("HH:mm")
+                            </div>
+                            <div style="color: antiquewhite; margin-bottom: 10px;">
+                                Через @notificationMinutesBefore минут
+                            </div>
+                            <div style="display: flex; gap: 10px; justify-content: center;">
+                                <MyButton ButtonText="Подтвердить" OnClick="ConfirmReservation"
+                                Style="padding: 5px 10px; font-size: 0.9rem;"></MyButton>
+                                <MyButton ButtonText="Отменить" OnClick="CancelReservation"
+                                Style="padding: 5px 10px; font-size: 0.9rem; background: #f44336;"></MyButton>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="color: rgba(250, 235, 215, 0.7); padding: 15px;">
+                            Нет новых уведомлений
+                        </div>
+                    }
                 </div>
             </div>
         </div>
     </div>  
 </PageContainer>
+@if (Selected != null && isBooking)
+{
+    <ModalWindow Title="Создание брони">
 
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div style="color: #ff6b6b;
+                             background: rgba(255, 107, 107, 0.1);
+                             padding: 10px 15px; border-radius: 4px; width: 100%;
+                             text-align: center; font-size: 0.9rem;">
+                @errorMessage
+            </div>
+        }
+        <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; justify-items: center; height: 40vh">
+            @if (!instantReservation)
+            {
+                <LabledInputDate TValue="DateTime" Label="Дата начала брони" @bind-Value="reservationStartDate" Background="#151818"></LabledInputDate>
+                <MyTimePicker TValue="TimeOnly" @bind-Value="reservationStartTime" Label="Время начала брони" Background="#151818"></MyTimePicker>
+            }
 
+            <MyTextField LabelText="Количество часов" Background="#151818" @bind-Value="hoursCount"></MyTextField>
+
+            <div style="display: flex; flex-direction: column; height: 100%;">
+                <div style="flex: 1;"></div>
+                <LabledInputCheckbox Label="Моментальная бронь"
+                @bind-Value="instantReservation">
+                </LabledInputCheckbox>
+            </div>
+
+            <div style="display: flex; flex-direction: row; gap:20px; justify-items: center; align-items: end; flex: 1">
+                <MyBorders>
+                    <MyButton ButtonText="Отмена" OnClick="Cancel"></MyButton>
+                </MyBorders>
+                <MyBorders>
+                    <MyButton ButtonText="Забронировать" OnClick="CheckReservationFields"></MyButton>
+                </MyBorders>
+            </div>
+        </div>
+    </ModalWindow>
+}
+@if (!succesfullyPaid && pay)
+{
+    <ModalWindow Title="Оплата">
+        <div style="display: flex; align-items: center; justify-items: center; flex-direction: column; gap: 20px;">
+            <h5 style="color: antiquewhite">Итоговая сумма бронирования составляет @totalPay</h5>
+            <h6 style="color: antiquewhite">Ваш баланс: @userService.CurrentClient.Balance</h6>
+            <h6 style="color: antiquewhite">Ваш бонусы: @userService.CurrentClient.Bonuses</h6>
+            @if(hasMembership) {
+                <h6 style="color: antiquewhite">Осталось часов в абонементе: @clientsMembership.HoursLeft</h6>
+            }
+
+            <LabledInputCheckbox Label="Потратить бонусы" @bind-Value="spendBonuses"></LabledInputCheckbox>    
+            @if(hasMembership) {
+                <LabledInputCheckbox Label="Потратить часы из абонемента" @bind-Value="spendMembershipHours"></LabledInputCheckbox>
+            }
+            <div style="display: flex; flex-direction: row; gap: 20px; justify-items: center; align-items: end; flex: 1">
+                <MyBorders>
+                    <MyButton ButtonText="Провести оплату" OnClick="SaveReservation"></MyButton>
+                </MyBorders>
+                <MyBorders>
+                    <MyButton ButtonText="Отмена" OnClick="Cancel"></MyButton>
+                </MyBorders>
+            </div>
+        </div>
+    </ModalWindow>
+}
+@if (succesfullyPaid)
+{
+    <ModalWindow Title="Рабочая станция успешно забронирована">
+        <MyBorders>
+            <MyButton ButtonText="Ок" OnClick="Cancel"></MyButton>
+        </MyBorders>
+    </ModalWindow>
+}
+@if(notEnoughMoney) {
+    <ModalWindow Title="Недостаточно средств на балансе для покупки данного абонемента!">
+        <MyBorders>
+            <MyButton OnClick="Cancel" ButtonText="Ок"></MyButton>
+        </MyBorders>
+    </ModalWindow>
+}
+@implements IDisposable
 @code {
-    private int Selected = 0;
+    private bool isBooking = false;
+    private WorkStation Selected = null;
+    private string errorMessage = "";
+    private bool instantReservation = false;
+
+    private bool notEnoughMoney = false;
+
+    private TimeOnly reservationStartTime = TimeOnly.FromDateTime(DateTime.Now);
+    private DateTime reservationStartDate = DateTime.Now;
+    private string hoursCount = "";
+    private int hoursCountInt = 0;
+
+    private Timer notificationTimer;
+    private Reservation upcomingReservation;
+    private bool showNotification = false;
+    private int notificationMinutesBefore = 15;
+
+    private decimal totalPay = 0;
+    private bool pay = false;
+    private bool succesfullyPaid = false;
+
+    private bool hasMembership = false;
+
+    private bool spendBonuses = false;
+    private bool spendMembershipHours = false;
+    private Session currentSession;
+    private TimeSpan remainingTime;
+    private Timer sessionTimer;
+    private bool hasActiveSession = false;
+
+    private Membership activeMembership;
+    private List<Membership> availableMemberships = new();
+    private bool isLoading = true;
+
+    private ClientsMembership clientsMembership = null;
+
     protected override void OnInitialized()
     {
         if (userService.CurrentUser == null) nav.NavigateTo("/");
     }
 
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (userService.CurrentUser == null) nav.NavigateTo("/");
+        await LoadMembershipData();
+        hasMembership = await HasActiveMembership();
+
+        await LoadCurrentSession();
+        notificationTimer = new Timer(CheckUpcomingReservations, null, 0, 60000);
+    }
+
+    private async void CheckUpcomingReservations(object state)
+    {
+        using(BootcampContext context = new BootcampContext()) {
+            var now = DateTime.Now;
+            var notificationTime = now.AddMinutes(notificationMinutesBefore);
+
+            upcomingReservation = await context.Reservations
+                .Include(r => r.IdSessionNavigation)
+                .ThenInclude(s => s.IdWorkStationNavigation)
+                .Where(r => r.IdSessionNavigation.IdClient == userService.CurrentClient.Id &&
+                           r.ReservationStatus == ReservationStatus.NotConfirmed && 
+                           r.IdSessionNavigation.StartTime > now &&
+                           r.IdSessionNavigation.StartTime <= notificationTime)
+                .FirstOrDefaultAsync();
+
+            if (upcomingReservation != null)
+            {
+                showNotification = true;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+
+    }
+    private async Task LoadMembershipData()
+    {
+        try
+        {
+            // Загружаем активный абонемент клиента
+            clientsMembership = await context.ClientsMemberships
+                .Include(cm => cm.IdMembershipBuyNavigation)
+                .ThenInclude(mb => mb.IdMembershipNavigation)
+                .Where(cm => cm.IsActive.Value &&
+                           cm.IdMembershipBuyNavigation.IdClient == userService.CurrentClient.Id)
+                .FirstOrDefaultAsync();
+
+            if (clientsMembership != null)
+            {
+                hasMembership = true;
+                activeMembership = clientsMembership.IdMembershipBuyNavigation.IdMembershipNavigation;
+            }
+
+            // Загружаем все доступные абонементы
+            availableMemberships = await context.Memberships
+                .OrderBy(m => m.Price)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading memberships: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task BuyMembership(int membershipId)
+    {
+        var cost = await context.Memberships.Where(x => x.Id == membershipId).FirstOrDefaultAsync();
+
+        if(userService.CurrentClient.Balance < cost.Price) {
+            notEnoughMoney = true;
+            return;
+            StateHasChanged();
+        }
+        try
+        {
+            using var transaction = await context.Database.BeginTransactionAsync();
+
+            var membershipBuy = new MembershipBuy
+                {
+                    IdClient = userService.CurrentClient.Id,
+                    IdMembership = membershipId,
+                    CreatedAt = DateTime.Now
+                };
+
+            context.MembershipBuys.Add(membershipBuy);
+            await context.SaveChangesAsync();
+
+            var membership = await context.Memberships.FindAsync(membershipId);
+            var newClientsMembership = new ClientsMembership
+                {
+                    IdMembershipBuy = membershipBuy.Id,
+                    HoursLeft = membership.HoursCount,
+                    IsActive = true,
+                };
+
+            context.ClientsMemberships.Add(newClientsMembership);
+            await context.SaveChangesAsync();
+
+            if (hasMembership && clientsMembership != null)
+            {
+                clientsMembership.IsActive = false;
+                await context.SaveChangesAsync();
+            }
+
+            await transaction.CommitAsync();
+
+            await LoadMembershipData();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error buying membership: {ex.Message}");
+        }
+    }
+
+    private async Task ConfirmReservation()
+    {
+        try
+        {
+
+            var reservation = await context.Reservations.Where(x => x.Id == upcomingReservation.Id).FirstOrDefaultAsync();
+            upcomingReservation.ReservationStatus = ReservationStatus.Confirmed;
+            reservation.ReservationStatus = ReservationStatus.Confirmed;
+
+            await context.SaveChangesAsync();
+            showNotification = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error confirming reservation: {ex.Message}");
+        }
+    }
+
+    private async Task CancelReservation()
+    {
+        try
+        {
+            var workstation = await context.WorkStations
+                .FindAsync(upcomingReservation.IdSessionNavigation.IdWorkStation);
+
+            if (workstation != null)
+            {
+                workstation.IdStatus = WorkStationStatus.Free;
+            }
+            var reservation = await context.Reservations.Where(x => x.Id == upcomingReservation.Id).FirstOrDefaultAsync();
+            reservation.ReservationStatus = ReservationStatus.Cancelled;
+            upcomingReservation.ReservationStatus = ReservationStatus.Cancelled;
+
+            context.Reservations.Update(upcomingReservation);
+            await context.SaveChangesAsync();
+
+            showNotification = false;
+            upcomingReservation = null;
+
+            var sessionPay = await context.SessionPayments
+                .Include(x=> x.BonusesSpentNavigation)
+                .Where(x => x.IdSession == reservation.IdSession).FirstOrDefaultAsync();
+
+            var moneyToReturn = sessionPay.TotalCost - (sessionPay.BonusesSpent == null ? 0 : sessionPay.BonusesSpentNavigation.Amount);
+            var bonusesToReturn = sessionPay.BonusesSpentNavigation.Amount;
+
+            var client = await context.Clients.Where(x => x.Id == userService.CurrentClient.Id).FirstOrDefaultAsync();
+            client.Bonuses += bonusesToReturn;
+            client.Balance += moneyToReturn;
+
+            var bonusMove = new BonusMove() { Amount = bonusesToReturn, ClientId = client.Id };
+
+            context.BonusMoves.Add(bonusMove);
+            await context.SaveChangesAsync();
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error canceling reservation: {ex.Message}");
+        }
+    }
+
+    public void Dispose()
+    {
+        sessionTimer?.Dispose();
+        notificationTimer?.Dispose();
+    }
+    private async Task LoadCurrentSession()
+    {
+        currentSession = await context.Sessions
+            .Include(s => s.IdWorkStationNavigation)
+            .Include(s => s.Reservations)
+            .Where(s => s.IdClient == userService.CurrentClient.Id &&
+                       s.StartTime.HasValue &&
+                       s.HoursCount.HasValue &&
+                       s.Reservations.FirstOrDefault().ReservationStatus == ReservationStatus.Active)
+            .OrderByDescending(s => s.StartTime)
+            .FirstOrDefaultAsync();
+
+        if (currentSession != null)
+        {
+            hasActiveSession = true;
+            StartTimer();
+        }
+    }
+
+    private void StartTimer()
+    {
+        sessionTimer = new Timer(async (state) =>
+        {
+            if (currentSession != null && currentSession.StartTime.HasValue && currentSession.HoursCount.HasValue)
+            {
+                var endTime = currentSession.StartTime.Value.AddHours(currentSession.HoursCount.Value);
+                remainingTime = endTime - DateTime.Now;
+
+                if (remainingTime.TotalSeconds <= 0)
+                {
+                    hasActiveSession = false;
+                    sessionTimer.Dispose();
+                }
+
+                await InvokeAsync(StateHasChanged);
+            }
+        }, null, 0, 1000); 
+    }
+
+    private string FormatRemainingTime()
+    {
+        if (remainingTime.TotalSeconds <= 0) return "00:00:00";
+        return $"{remainingTime.Hours:00}:{remainingTime.Minutes:00}:{remainingTime.Seconds:00}";
+    }
+
     private void PersonalCabinet() {
         nav.NavigateTo("/personalCabinet");
     }
-    private void SelectWorkStation(int selected) {
-        Selected = selected;
+    private async Task SelectWorkStation(int selected) {
+
+        Selected = await context.WorkStations.Where(x => x.Id == selected).FirstOrDefaultAsync();
+        isBooking = true;
+    }
+
+    private void Cancel() {
+        Selected = null;
+        isBooking = false;
+        reservationStartTime = TimeOnly.FromDateTime(DateTime.Now);
+        reservationStartDate = DateTime.Now;
+        instantReservation = false;
+        hoursCount = "";
+        hoursCountInt = 0;
+        totalPay = 0;
+        pay = false;
+        succesfullyPaid = false;
+        notEnoughMoney = false;
+        StateHasChanged();
+        OnInitializedAsync();
+    }
+
+    private async void CheckReservationFields()
+    {
+        errorMessage = "";
+        var userPhone = userService.CurrentUser.Phone;
+
+        if (!instantReservation && (reservationStartDate.Day < DateTime.Now.Day && reservationStartTime < TimeOnly.FromDateTime(DateTime.Now)))
+        {
+            errorMessage = "Некорректная дата/время";
+            StateHasChanged();
+            return;
+        }
+        if (!Int32.TryParse(hoursCount, out hoursCountInt))
+        {
+            errorMessage = "Некорректно введено количество часов";
+            StateHasChanged();
+            return;
+        }
+
+        if (!await IsWorkStationAvailable(
+            Selected.Id,
+            new DateTime(reservationStartDate.Year, reservationStartDate.Month, reservationStartDate.Day, reservationStartTime.Hour, reservationStartTime.Minute, reservationStartTime.Second),
+            hoursCountInt))
+        {
+            errorMessage = "В указаное время рабочая станция будет занята";
+            StateHasChanged();
+            return;
+        }
+
+        var user = await context.Users.Where(x => x.Phone == userPhone).FirstOrDefaultAsync();
+
+        if (user == null)
+        {
+            errorMessage = "Аккаунта с данным номером телефона не существует";
+            StateHasChanged();
+            return;
+        }
+
+        totalPay = hoursCountInt * Selected.Cost.Value;
+        pay = true;
+        StateHasChanged();
+    }
+
+    private async Task<bool> IsWorkStationAvailable(int workStationId, DateTime startTime, int hoursCount)
+    {
+        DateTime endTime = startTime.AddHours(hoursCount);
+
+        bool isOccupied = await context.Sessions
+            .Include(x => x.IdWorkStationNavigation)
+            .Include(x => x.Reservations)
+            .AnyAsync(s => (s.IdWorkStation == workStationId && s.Reservations.Any(x => x.ReservationStatus == ReservationStatus.Active) &&
+                          s.StartTime.HasValue &&
+                          s.HoursCount.HasValue &&
+                          s.StartTime.Value <= endTime.AddMinutes(5) &&
+                          s.StartTime.Value.AddHours(s.HoursCount.Value) >= startTime.AddMinutes(-5)));
+
+        return !isOccupied;
+    }
+
+    private async void SaveReservation()
+    {
+        errorMessage = "";
+        using var transaction = await context.Database.BeginTransactionAsync();
+        try
+        {
+            var client = userService.CurrentClient;
+            Session session = new Session()
+                {
+                    IdClient = client.Id,
+                    HoursCount = hoursCountInt,
+                    IdWorkStation = Selected.Id,
+                    StartTime = instantReservation ? DateTime.Now : new DateTime(reservationStartDate.Year, reservationStartDate.Month, reservationStartDate.Day, reservationStartTime.Hour, reservationStartTime.Minute, reservationStartTime.Second),
+                };
+
+            context.Sessions.Add(session);
+            await context.SaveChangesAsync();
+            decimal? totalCost = hoursCountInt * Selected.Cost;
+
+            SessionPayment sessionPayment = new SessionPayment()
+                {
+                    TotalCost = totalCost,
+                    BonusesSpent = null,
+                    HoursFromMembership = 0,
+                    IdSession = session.Id
+                };
+
+            context.SessionPayments.Add(sessionPayment);
+            await context.SaveChangesAsync();
+
+            Reservation reservation = new Reservation()
+                {
+                    IdSession = session.Id,
+                    ReservationStatus = instantReservation ? 1 : 4,
+                };
+
+            Selected.IdStatus = instantReservation ? WorkStationStatus.Busy : WorkStationStatus.Free;
+
+            var sumToPay = totalCost;
+            var spendedBonuses = 0;
+            var spendedHours = 0;
+            if(spendMembershipHours) {
+                spendedHours = Math.Min(clientsMembership.HoursLeft.Value, hoursCountInt);
+                sumToPay = (hoursCountInt - spendedHours) * Selected.Cost;
+                clientsMembership.HoursLeft -= spendedHours;
+
+            }
+            if(spendBonuses) {
+                spendedBonuses = (int)Math.Min(sumToPay.Value, (decimal)(client.Bonuses.Value));
+                sumToPay = sumToPay - spendedBonuses;
+            }
+
+            var loyalityLevel = await context.LoyalityLevels.Where(x => x.Id == client.LoyalityLevel).FirstOrDefaultAsync();
+
+            BonusMove bonusMove = new BonusMove();
+
+            if (spendedBonuses == 0)
+            {
+                var gotBonuses = (10 + loyalityLevel.BonusIncrease.Value) * (hoursCountInt - spendedHours);
+                bonusMove = new BonusMove()
+                    {
+                        Amount = gotBonuses,
+                        ClientId = client.Id
+                    };
+                client.Bonuses += gotBonuses;
+            }
+            else { 
+                client.Bonuses -= spendedBonuses; 
+                bonusMove = new BonusMove()
+                    {
+                        Amount = -spendedBonuses,
+                        ClientId = client.Id
+                    };
+            }
+
+            client.Balance -= sumToPay;
+            context.BonusMoves.Add(bonusMove);
+            await context.SaveChangesAsync();
+            sessionPayment.BonusesSpent = bonusMove.Id;
+            sessionPayment.TotalCost = sumToPay;
+            userService.CheckLevel(client);
+
+            context.Reservations.Add(reservation);
+            await context.SaveChangesAsync();
+
+            Selected.IdStatus = 1;
+            await context.SaveChangesAsync();
+
+            succesfullyPaid = true;
+            await transaction.CommitAsync();
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            StateHasChanged();
+            await transaction.RollbackAsync();
+        }
+    }
+
+    private async Task<bool> HasActiveMembership()
+    {
+        clientsMembership = await context.ClientsMemberships
+            .Where(x => x.IsActive == true && 
+                x.IdMembershipBuyNavigation.IdClient == userService.CurrentClient.Id)
+            .FirstOrDefaultAsync();
+
+
+
+        return clientsMembership != null;
+    }
+
+    private async Task EndSession()
+    {
+        try
+        {
+            if (currentSession != null)
+            {
+                var reservation = await context.Reservations.Where(x => x.IdSession == currentSession.Id).FirstOrDefaultAsync();
+                await context.SaveChangesAsync();
+
+                var workstation = await context.WorkStations.FindAsync(currentSession.IdWorkStation);
+                if (workstation != null)
+                {
+                    reservation.ReservationStatus = ReservationStatus.Finished;
+                    workstation.IdStatus = WorkStationStatus.Free;
+                    await context.SaveChangesAsync();
+                }
+
+                hasActiveSession = false;
+                currentSession = null;
+                sessionTimer?.Dispose();
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error ending session: {ex.Message}");
+        }
     }
 }

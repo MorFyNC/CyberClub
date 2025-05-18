@@ -49,7 +49,6 @@
         padding-right: 8px;
     }
 
-        /* Полоса прокрутки */
         .transactions-list::-webkit-scrollbar {
             width: 6px;
         }
@@ -131,7 +130,6 @@
         color: rgba(250, 235, 215, 0.7);
     }
 
-    /* Специфичные цвета для типов транзакций */
     .transaction-item.balance {
         border-left-color: #4CAF50;
     }
@@ -179,10 +177,16 @@
                         {
                             <span>Компьютер @transaction.WorkStationId</span>
                             <span class="amount negative">-@transaction.Amount руб.</span>
-                            @if (transaction.BonusesSpent > 0)
-                            {
-                                <span class="bonuses">Списано бонусов: @transaction.BonusesSpent</span>
-                            }
+                            <span class="bonuses">
+                                @if (transaction.BonusesSpent < 0)
+                                {
+                                    <text>Списано бонусов: @Math.Abs(transaction.BonusesSpent)</text>
+                                }
+                                else
+                                {
+                                    <text>Начислено бонусов: @Math.Abs(transaction.BonusesSpent)</text>
+                                }
+                            </span>
                         }
                         else if (transaction.Type == "Membership")
                         {
@@ -217,7 +221,6 @@
     {
         var clientId = userService.CurrentClient.Id;
 
-        // Получаем все типы транзакций
         var balanceTransactions = await DbContext.BalanceReplenishments
             .Where(b => b.IdClient == clientId)
             .Select(b => new Transaction
@@ -237,7 +240,8 @@
                     Date = sp.CreatedAt ?? DateTime.Now,
                     Amount = sp.TotalCost ?? 0,
                     WorkStationId = sp.IdSessionNavigation.IdWorkStation,
-                    BonusesSpent = sp.BonusesSpent ?? 0,
+                    BonusesSpent = sp.BonusesSpentNavigation != null ?
+                                  sp.BonusesSpentNavigation.Amount : 0, // Убрали Math.Abs()
                     Description = "Оплата сессии"
                 }).ToListAsync();
 
@@ -262,7 +266,6 @@
                     Description = b.Amount > 0 ? "Начисление бонусов" : "Списание бонусов"
                 }).ToListAsync();
 
-        // Объединяем все транзакции и сортируем по дате
         transactions = balanceTransactions
             .Concat(sessionTransactions)
             .Concat(membershipTransactions)

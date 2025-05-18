@@ -25,9 +25,10 @@ namespace CyberClub.Classes
             if (nextLevel is null) return;
 
             var sessionCashPayments = await tempContext.Sessions
-                    .Where(s => s.IdClient == client.Id)
+                .Include(x => x.Reservations)
+                    .Where(s => s.IdClient == client.Id && s.Reservations.FirstOrDefault().ReservationStatus != ReservationStatus.Cancelled)
                     .SelectMany(s => s.SessionPayments)
-                    .Where(sp => sp.HoursFromMembership == null || sp.HoursFromMembership == 0)
+                    .Where(sp => (sp.HoursFromMembership == null || sp.HoursFromMembership == 0))
                     .SumAsync(sp => sp.TotalCost ?? 0);
 
             var totalBonusesSpent = await tempContext.BonusMoves
@@ -42,8 +43,17 @@ namespace CyberClub.Classes
 
             if(totalSpent >= nextLevel.RequiredSpend)
             {
-                CurrentClient.LoyalityLevel = nextLevel.Id;
-                await tempContext.SaveChangesAsync();
+                var clientToUpdate = await tempContext.Clients.FindAsync(client.Id);
+                if (clientToUpdate != null)
+                {
+                    clientToUpdate.LoyalityLevel = nextLevel.Id;
+                    await tempContext.SaveChangesAsync();
+
+                    
+                    CurrentClient.LoyalityLevel = nextLevel.Id;
+                    CurrentClient.LoyalityLevelNavigation = nextLevel;
+                    
+                }
             }
         }
     }

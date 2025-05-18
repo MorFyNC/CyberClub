@@ -18,7 +18,8 @@
         {
             var sessionPayments = await _context.SessionPayments
                 .Include(sp => sp.IdSessionNavigation)
-                .Where(sp => (startDate == null || sp.CreatedAt >= startDate) && (endDate == null || sp.CreatedAt <= endDate))
+                .ThenInclude(r => r.Reservations)
+                .Where(sp => (startDate == null || sp.CreatedAt >= startDate) && (endDate == null || sp.CreatedAt <= endDate) && sp.IdSessionNavigation.Reservations.FirstOrDefault().ReservationStatus != ReservationStatus.Cancelled)
                 .ToListAsync();
 
             var membershipPurchases = await _context.MembershipBuys

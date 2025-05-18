@@ -434,7 +434,8 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
 
         bool isOccupied = await context.Sessions
             .Include(x => x.IdWorkStationNavigation)
-            .AnyAsync(s => (s.IdWorkStation == workStationId &&
+            .Include(x => x.Reservations)
+            .AnyAsync(s => (s.IdWorkStation == workStationId && s.Reservations.Any(x => x.ReservationStatus == ReservationStatus.Active) &&
                           s.StartTime.HasValue &&
                           s.HoursCount.HasValue &&
                           s.StartTime.Value <= endTime.AddMinutes(5) &&
@@ -490,7 +491,7 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
 
             context.BonusMoves.Add(bonusMove);
             userService.CheckLevel(client);
-
+            
             context.Reservations.Add(reservation);
             await context.SaveChangesAsync();
 
