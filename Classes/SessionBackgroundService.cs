@@ -48,6 +48,7 @@ public class SessionBackgroundService : BackgroundService
                 foreach (var reservation in reservationsToCancel)
                 {
                     reservation.ReservationStatus = ReservationStatus.Cancelled;
+                    reservation.IdSessionNavigation.IdWorkStationNavigation.IdStatus = WorkStationStatus.Free;
                     _logger.LogInformation($"Резервация {reservation.Id} отменена");
                 }
 
@@ -58,8 +59,9 @@ public class SessionBackgroundService : BackgroundService
                                s.HoursCount.HasValue &&
                                (s.StartTime.Value.AddHours(s.HoursCount.Value) <= now || s.Reservations.FirstOrDefault().ReservationStatus == ReservationStatus.Cancelled) &&
                                s.IdWorkStationNavigation != null &&
-                               s.IdWorkStationNavigation.IdStatus == WorkStationStatus.Busy)
-                    .ToListAsync(stoppingToken);
+                               s.IdWorkStationNavigation.IdStatus == WorkStationStatus.Busy && 
+                               s.Reservations.FirstOrDefault().ReservationStatus != ReservationStatus.Finished)
+                                .ToListAsync(stoppingToken);
 
                 foreach (var session in endedSessions)
                 {

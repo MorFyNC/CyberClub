@@ -2,32 +2,15 @@
 @rendermode InteractiveServer
 @inject BootcampContext context
 @inject NavigationManager nav
+@inject UserService userService
+
+<head>
+    <link href="styles.css" rel="stylesheet" />
+</head>
 
 <style>
     rect:hover {
     cursor: pointer;
-    }
-
-    .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    }
-
-    .modal-content {
-    background: #151818;
-    padding: 20px;
-    border-radius: 8px;
-    max-width: 500px;
-    justify-items: center;
-    align-items: center;
     }
 </style>
 
@@ -49,77 +32,26 @@
 
 @if (isWorkStationExisting == false && !isCreatingWorkStation)
 {
-    <div class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="align-self: center; color: antiquewhite">Внимание!</h3>
-            <p style="color: antiquewhite; align-self: center;">Рабочая станция не найдена.</p>
+    <ModalWindow Title="Внимание!">
+        <p style="color: antiquewhite; align-self: center;">Рабочая станция не найдена.</p>
 
-            <div style="display: flex; flex-direction: row; justify-items: center; align-items: center; gap: 20px;">
-                <MyBorders>
-                    <MyButton ButtonText="Добавить рабочую станцию" OnClick="CreateWorkStation" AdditionalStyles="align-self: center; "></MyButton>
-                </MyBorders>
-                <MyBorders>
-                    <MyButton ButtonText="Закрыть" OnClick="ClearSelected" AdditionalStyles="align-self: center; "></MyButton>
-                </MyBorders>
-            </div>
-        </div>
-    </div>
-}
-else if(isCreatingWorkStation && !succesfullyCreated) {
-    <div class="modal-overlay">
-        <div class="modal-content">
-            <h4 style="color: antiquewhite">Создание рабочей станции</h4>
-
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-                <div style="display: flex; flex-direction: column; gap: 20px; align-items: center;">
-
-                    @if(!string.IsNullOrEmpty(errorMessage)) {
-                        <div style="color: #ff6b6b;
-                             background: rgba(255, 107, 107, 0.1);
-                             padding: 10px 15px; border-radius: 4px; width: 100%;
-                             text-align: center; font-size: 0.9rem;">
-                            @errorMessage
-                        </div>
-                    }
-
-                    <MyTextField Background="#151818" LabelText="Цена" @bind-Value="cost"></MyTextField>
-                    <div style="display: flex; flex-direction: row; gap: 20px">
-                        <LabledInputCheckbox Label="PS5" @bind-Value="isPS5"></LabledInputCheckbox>
-                    </div>
-                    <MyTextField Background="#151818" LabelText="Описание" style="height: 100px;" isTextArea="true" @bind-Value="description"></MyTextField>
-                </div>
-
-                <div style="display: flex; flex-direction: row; justify-items: center; align-items: center; gap: 20px;">
-                    <MyBorders>
-                        <MyButton ButtonText="Отмена" OnClick="ClearSelected"></MyButton>
-                    </MyBorders>
-                    <MyBorders>
-                        <MyButton ButtonText="Сохранить" OnClick="SaveChanges"></MyButton>
-                    </MyBorders>
-                </div>
-            </div>
-        </div>
-    </div>
-} else if(succesfullyCreated) {
-    <div class="modal-overlay">
-        <div class="modal-content" style="gap: 20px;">
-            <h4 style="color: antiquewhite">Рабочая станция успешно добавлена</h4>
-
+        <div style="display: flex; flex-direction: row; justify-items: center; align-items: center; gap: 20px;">
             <MyBorders>
-                <MyButton ButtonText="Ок" OnClick="ClearSelected"></MyButton>
+                <MyButton ButtonText="Добавить рабочую станцию" OnClick="CreateWorkStation" AdditionalStyles="align-self: center; "></MyButton>
+            </MyBorders>
+            <MyBorders>
+                <MyButton ButtonText="Закрыть" OnClick="ClearSelected" AdditionalStyles="align-self: center; "></MyButton>
             </MyBorders>
         </div>
-    </div>
+    </ModalWindow>
 }
+else if(isCreatingWorkStation && !succesfullyCreated) {
+    <ModalWindow Title="Создание рабочей станции">
 
-@if(isWorkStationExisting == true && isUpdating != true) {
-    <div class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="align-self: center; color: antiquewhite">Выберите действие</h3>
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 20px; align-items: center;">
 
-            <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; gap: 20px;">
-                @if (!string.IsNullOrEmpty(errorMessage))
-                {
+                @if(!string.IsNullOrEmpty(errorMessage)) {
                     <div style="color: #ff6b6b;
                              background: rgba(255, 107, 107, 0.1);
                              padding: 10px 15px; border-radius: 4px; width: 100%;
@@ -127,151 +59,166 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
                         @errorMessage
                     </div>
                 }
+
+                <MyTextField Background="#151818" LabelText="Цена" @bind-Value="cost"></MyTextField>
+                <div style="display: flex; flex-direction: row; gap: 20px">
+                    <LabledInputCheckbox Label="PS5" @bind-Value="isPS5"></LabledInputCheckbox>
+                </div>
+                <MyTextField Background="#151818" LabelText="Описание" style="height: 100px;" isTextArea="true" @bind-Value="description"></MyTextField>
+            </div>
+
+            <div style="display: flex; flex-direction: row; justify-items: center; align-items: center; gap: 20px;">
                 <MyBorders>
-                    <MyButton ButtonText="Создать бронь на эту станцию" OnClick="CreateReservation" AdditionalStyles="align-self: center; "></MyButton>
+                    <MyButton ButtonText="Отмена" OnClick="ClearSelected"></MyButton>
                 </MyBorders>
                 <MyBorders>
-                    <MyButton ButtonText="@(selectedWorkStation?.IsBlocked == true ? "Разблокировать рабочую станцию" : "Заблокировать рабочую станцию")"
-                    OnClick="SwitchBlockStation"
-                    AdditionalStyles="align-self: center;" />
-                </MyBorders>
-                <MyBorders>
-                    <MyButton ButtonText="Изменить рабочую станцию" OnClick="UpdateWorkStation" AdditionalStyles="align-self: center; "></MyButton>
-                </MyBorders>
-                <MyBorders>
-                    <MyButton ButtonText="Закрыть" OnClick="ClearSelected" AdditionalStyles="align-self: center; "></MyButton>
+                    <MyButton ButtonText="Сохранить" OnClick="SaveChanges"></MyButton>
                 </MyBorders>
             </div>
         </div>
-    </div>
+    </ModalWindow>
+} else if(succesfullyCreated) {
+    <ModalWindow Title="Рабочая станция успешно добавлена">
+        <div style="display: flex; flex: 1; height: 10vh; flex-direction: column; justify-items: end; align-items: center;"></div>   
+        <MyBorders>
+            <MyButton ButtonText="Ок" OnClick="ClearSelected"></MyButton>
+        </MyBorders>
+    </ModalWindow>
+}
+
+@if(isWorkStationExisting == true && isUpdating != true) {
+    <ModalWindow Title="Выберите действие">
+
+        <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; gap: 20px;">
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div style="color: #ff6b6b;
+                             background: rgba(255, 107, 107, 0.1);
+                             padding: 10px 15px; border-radius: 4px; width: 100%;
+                             text-align: center; font-size: 0.9rem;">
+                    @errorMessage
+                </div>
+            }
+            <MyBorders>
+                <MyButton ButtonText="Создать бронь на эту станцию" OnClick="CreateReservation" AdditionalStyles="align-self: center; "></MyButton>
+            </MyBorders>
+            <MyBorders>
+                <MyButton ButtonText="@(selectedWorkStation?.IsBlocked == true ? "Разблокировать рабочую станцию" : "Заблокировать рабочую станцию")"
+                OnClick="SwitchBlockStation"
+                AdditionalStyles="align-self: center;" />
+            </MyBorders>
+            <MyBorders>
+                <MyButton ButtonText="Изменить рабочую станцию" OnClick="UpdateWorkStation" AdditionalStyles="align-self: center; "></MyButton>
+            </MyBorders>
+            <MyBorders>
+                <MyButton ButtonText="Закрыть" OnClick="ClearSelected" AdditionalStyles="align-self: center; "></MyButton>
+            </MyBorders>
+        </div>
+    </ModalWindow>
 } 
 @if(isUpdating == true && !succesfullyUpdated) {
-    <div class="modal-overlay">
-        <div class="modal-content">
-            <h4 style="color: antiquewhite">Изменение рабочей станции</h4>
+    <ModalWindow Title="Изменение рабочей станции">
 
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-                <div style="display: flex; flex-direction: column; gap: 20px; align-items: center;">
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 20px; align-items: center;">
 
-                    @if (!string.IsNullOrEmpty(errorMessage))
-                    {
-                        <div style="color: #ff6b6b;
-                             background: rgba(255, 107, 107, 0.1);
-                             padding: 10px 15px; border-radius: 4px; width: 100%;
-                             text-align: center; font-size: 0.9rem;">
-                            @errorMessage
-                        </div>
-                    }
-
-                    <MyTextField Background="#151818" LabelText="Цена" @bind-Value="cost"></MyTextField>
-                    <div style="display: flex; flex-direction: row; gap: 20px">
-                        <LabledInputCheckbox Label="PS5" @bind-Value="isPS5"></LabledInputCheckbox>
-                    </div>
-                    <MyTextField Background="#151818" LabelText="Описание" style="height: 100px;" isTextArea="true" @bind-Value="description"></MyTextField>
-                </div>
-
-                <div style="display: flex; flex-direction: row; justify-items: center; align-items: center; gap: 20px;">
-                    <MyBorders>
-                        <MyButton ButtonText="Отмена" OnClick="ClearSelected"></MyButton>
-                    </MyBorders>
-                    <MyBorders>
-                        <MyButton ButtonText="Сохранить" OnClick="SaveChanges"></MyButton>
-                    </MyBorders>
-                </div>
-            </div>
-        </div>
-    </div>
-} 
-@if(isUpdating == true && succesfullyUpdated) {
-    <div class="modal-overlay">
-        <div class="modal-content" style="gap: 20px;">
-            <h4 style="color: antiquewhite">Рабочая станция успешно изменена</h4>
-
-            <MyBorders>
-                <MyButton ButtonText="Ок" OnClick="ClearSelected"></MyButton>
-            </MyBorders>
-        </div>
-    </div>
-}
-@if(isWorkStationExisting == true && isCreatingReservation) {
-    <div class="modal-overlay">
-        <div class="modal-content">
-            <h4 style="color: antiquewhite">Создание брони</h4>
-            @if (!string.IsNullOrEmpty(errorMessage))
-            {
-                <div style="color: #ff6b6b;
-                             background: rgba(255, 107, 107, 0.1);
-                             padding: 10px 15px; border-radius: 4px; width: 100%;
-                             text-align: center; font-size: 0.9rem;">
-                    @errorMessage
-                </div>
-            }
-            <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; justify-items: center; height: 40vh">
-                <MyTextField Background="#151818" LabelText="Пользователь" @bind-Value="userPhone" IsPhoneNumber="true"></MyTextField>
-
-                @if (!instantReservation)
+                @if (!string.IsNullOrEmpty(errorMessage))
                 {
-                    <LabledInputDate Background="#151818" TValue="DateTime" Label="Дата начала брони" @bind-Value="reservationStartDate"></LabledInputDate>
-                    <MyTimePicker Background="#151818" TValue="TimeOnly" @bind-Value="reservationStartTime" Label="Время начала брони"></MyTimePicker>
+                    <div style="color: #ff6b6b;
+                            background: rgba(255, 107, 107, 0.1);
+                            padding: 10px 15px; border-radius: 4px; width: 100%;
+                            text-align: center; font-size: 0.9rem;">
+                        @errorMessage
+                    </div>
                 }
 
-                <MyTextField LabelText="Количество часов" Background="#151818" @bind-Value="hoursCount"></MyTextField>
-
-                <div style="display: flex; flex-direction: column; height: 100%;">
-                    <div style="flex: 1;"></div> 
-                    <LabledInputCheckbox Label="Моментальная бронь"
-                    @bind-Value="instantReservation">
-                    </LabledInputCheckbox>
+                <MyTextField Background="#151818" LabelText="Цена" @bind-Value="cost"></MyTextField>
+                <div style="display: flex; flex-direction: row; gap: 20px">
+                    <LabledInputCheckbox Label="PS5" @bind-Value="isPS5"></LabledInputCheckbox>
                 </div>
+                <MyTextField Background="#151818" LabelText="Описание" style="height: 100px;" isTextArea="true" @bind-Value="description"></MyTextField>
+            </div>
 
-                <div style="display: flex; flex-direction: row; gap:20px; justify-items: center; align-items: end; flex: 1">
-                    <MyBorders>
-                        <MyButton ButtonText="Отмена" OnClick="ClearSelected"></MyButton>
-                    </MyBorders>
-                    <MyBorders>
-                        <MyButton ButtonText="Забронировать" OnClick="CheckReservationFields"></MyButton>
-                    </MyBorders>
-                </div>
+            <div style="display: flex; flex-direction: row; justify-items: center; align-items: center; gap: 20px;">
+                <MyBorders>
+                    <MyButton ButtonText="Отмена" OnClick="ClearSelected"></MyButton>
+                </MyBorders>
+                <MyBorders>
+                    <MyButton ButtonText="Сохранить" OnClick="SaveChanges"></MyButton>
+                </MyBorders>
             </div>
         </div>
-    </div>
+    </ModalWindow>
+} 
+@if(isUpdating == true && succesfullyUpdated) {
+    <ModalWindow Title="Рабочая станция успешно изменена">
+        <MyBorders>
+            <MyButton ButtonText="Ок" OnClick="ClearSelected"></MyButton>
+        </MyBorders>
+    </ModalWindow>
 }
-@if (user != null && !succesfullyPaid) {
-    <div class="modal-overlay">
-        <div class="modal-content">
-            <h4 style="color: antiquewhite">Оплата</h4>
-            @if (!string.IsNullOrEmpty(errorMessage))
-            {
-                <div style="color: #ff6b6b;
+@if(isWorkStationExisting == true && isCreatingReservation) {
+    <ModalWindow Title="Создание брони">
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div style="color: #ff6b6b;
                              background: rgba(255, 107, 107, 0.1);
                              padding: 10px 15px; border-radius: 4px; width: 100%;
                              text-align: center; font-size: 0.9rem;">
-                    @errorMessage
-                </div>
-            }
-            <div style="display: flex; align-items: center; justify-items: center; flex-direction: column">
+                @errorMessage
+            </div>
+        }
+        <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; justify-items: center; height: 40vh">
+            <MyTextField Background="#151818" LabelText="Пользователь" @bind-Value="userPhone" IsPhoneNumber="true"></MyTextField>
 
-                <div style="display: flex; flex-direction: row; gap: 20px; justify-items: center; align-items: end; flex: 1">
-                    <MyBorders>
-                        <MyButton ButtonText="Провести оплату" OnClick="SaveReservation"></MyButton>
-                    </MyBorders>
-                    <MyBorders>
-                        <MyButton ButtonText="Отмена" OnClick="ClearSelected"></MyButton>
-                    </MyBorders>
-                </div>
+            @if (!instantReservation)
+            {
+                <LabledInputDate Background="#151818" TValue="DateTime" Label="Дата начала брони" @bind-Value="reservationStartDate"></LabledInputDate>
+                <MyTimePicker Background="#151818" TValue="TimeOnly" @bind-Value="reservationStartTime" Label="Время начала брони"></MyTimePicker>
+            }
+
+            <MyTextField LabelText="Количество часов" Background="#151818" @bind-Value="hoursCount"></MyTextField>
+
+            <div style="display: flex; flex-direction: column; height: 100%;">
+                <div style="flex: 1;"></div> 
+                <LabledInputCheckbox Label="Моментальная бронь"
+                @bind-Value="instantReservation">
+                </LabledInputCheckbox>
+            </div>
+
+            <div style="display: flex; flex-direction: row; gap:20px; justify-items: center; align-items: end; flex: 1">
+                <MyBorders>
+                    <MyButton ButtonText="Отмена" OnClick="ClearSelected"></MyButton>
+                </MyBorders>
+                <MyBorders>
+                    <MyButton ButtonText="Забронировать" OnClick="CheckReservationFields"></MyButton>
+                </MyBorders>
             </div>
         </div>
-    </div>
+    </ModalWindow>
+}
+@if (user != null && !succesfullyPaid) {
+    <ModalWindow Title="Оплата">
+        <div style="display: flex; align-items: center; justify-items: center; flex-direction: column; gap: 20px;">
+            <h5 style="color: antiquewhite">Итоговая сумма бронирования составляет @totalPay</h5>
+            <div style="display: flex; flex-direction: row; gap: 20px; justify-items: center; align-items: end; flex: 1">
+                <MyBorders>
+                    <MyButton ButtonText="Провести оплату" OnClick="SaveReservation"></MyButton>
+                </MyBorders>
+                <MyBorders>
+                    <MyButton ButtonText="Отмена" OnClick="ClearSelected"></MyButton>
+                </MyBorders>
+            </div>
+        </div>
+    </ModalWindow>
 }
 @if(succesfullyPaid) {
-    <div class="modal-overlay" >
-        <div class="modal-content" style="gap: 20px">
-            <h4 style="color: antiquewhite">Рабочая станция успешно забронирована</h4>
-            <MyBorders>
-                <MyButton ButtonText="Ок" OnClick="ClearSelected"></MyButton>
-            </MyBorders>
-        </div>
-    </div>
+    <ModalWindow Title="Рабочая станция успешно забронирована">
+        <MyBorders>
+            <MyButton ButtonText="Ок" OnClick="ClearSelected"></MyButton>
+        </MyBorders>
+    </ModalWindow>
 }
 
 @code {
@@ -301,6 +248,12 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
     private User user = null;
     private Client client = null;
     private int hoursCountInt;
+    private decimal? totalPay;
+
+    protected override void OnInitialized()
+    {
+        if (!userService.IsAdmin) nav.NavigateTo("/");
+    }
 
     private async void SelectArea(int workStationId)
     {
@@ -460,6 +413,7 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
         var client = await context.Clients.Where(x => x.IdUser == user.Id).FirstOrDefaultAsync();
         this.user = user;
         this.client = client;
+        totalPay = hoursCountInt * selectedWorkStation.Cost;
         StateHasChanged();
     }
 
@@ -474,7 +428,7 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
                 IdClient = client.Id,
                 HoursCount = hoursCountInt,
                 IdWorkStation = selectedWorkStation.Id,
-                StartTime = new DateTime(reservationStartDate.Year, reservationStartDate.Month, reservationStartDate.Day, reservationStartTime.Hour, reservationStartTime.Minute, reservationStartTime.Second),
+                StartTime = instantReservation ? DateTime.Now : new DateTime(reservationStartDate.Year, reservationStartDate.Month, reservationStartDate.Day, reservationStartTime.Hour, reservationStartTime.Minute, reservationStartTime.Second),
             };
 
             context.Sessions.Add(session);

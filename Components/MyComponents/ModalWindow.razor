@@ -1,0 +1,28 @@
+﻿<head>
+    <link href="styles.css" rel="stylesheet" />
+</head>
+
+<div class="modal-overlay">
+    <div class="modal-content">
+        <h4 style="color: antiquewhite; align-self: center; margin-bottom: 20px">@Title</h4>
+        
+        <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; gap: 20px;">
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div style="color: #ff6b6b;
+                                 background: rgba(255, 107, 107, 0.1);
+                                 padding: 10px 15px; border-radius: 4px; width: 100%;
+                                 text-align: center; font-size: 0.9rem;">
+                    @ErrorMessage
+                </div>
+            }
+            @ChildContent
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public string Title { get; set; } = "Модальное окно";
+    [Parameter] public string ErrorMessage { get; set; } = "";
+}

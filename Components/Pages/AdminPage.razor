@@ -1,7 +1,9 @@
 ﻿@page "/admin"
 @inject NavigationManager nav
 @inject UserService userService
+@inject BootcampContext context
 @rendermode InteractiveServer
+
 <PageContainer>
     <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; width: 100%; height: 100%; margin-top: 10px; ">
         <h1 style="color: antiquewhite; text-align: center; width: 100%; margin-top: 20px; font-size: 1.5rem;">
@@ -16,6 +18,12 @@
                 <MyButton ButtonText="Управление рабочими станциями" OnClick="WorkingStations"></MyButton>
             </MyBorders>
             <MyBorders>
+                <MyButton ButtonText="Пополнить баланс пользователя" OnClick="BalanceReplenish"></MyButton>
+            </MyBorders>
+            <MyBorders>
+                <MyButton ButtonText="Отчеты" OnClick="FinanceReports"></MyButton>
+            </MyBorders>
+            <MyBorders>
                 <MyButton ButtonText="Выход" OnClick="Logout"></MyButton>
             </MyBorders>
         </div>
@@ -23,7 +31,44 @@
 
 </PageContainer>
 
+@if(balanceReplenish && !succesfullyReplenished) {
+    <ModalWindow ErrorMessage="@errorMessage" Title="Пополнение баланса пользователя">
+        <MyTextField IsPhoneNumber="true" LabelText="Номер телефона пользователя" ValueChanged="FindUser"></MyTextField>
+        <label style="color: antiquewhite">@foundUser</label>
+        <MyTextField LabelText="Сумма пополнения" ValueChanged="ConvertValue"></MyTextField>
+
+        <div style="display: flex; flex-direction: row; align-items: start; justify-items: end; gap: 20px;">
+            <MyBorders>
+                <MyButton ButtonText="Отмена" OnClick="Cancel"></MyButton>
+            </MyBorders>
+
+            <MyBorders>
+                <MyButton ButtonText="Пополнить" OnClick="SaveReplenishment"></MyButton>
+            </MyBorders>
+        </div>
+    </ModalWindow>
+}
+else if (succesfullyReplenished) {
+    <ModalWindow Title="@($"Баланс пользователя {found?.Fullname} пополнен на {amount} рублей")">
+        <MyBorders>
+            <MyButton title="Ок" OnClick="Cancel"></MyButton>
+        </MyBorders>
+    </ModalWindow>
+}
+
 @code {
+    private bool balanceReplenish = false;
+
+    private string phoneNumber = "";
+    private string amount = "";
+    private string foundUser = "";
+    private bool canConvert;
+    private decimal amountDecimal = 0;
+    private bool userIsFound = false;
+    private string errorMessage = "";
+    private bool succesfullyReplenished = false;
+    private User? found = null;
+
     private void AddNewUser() {
         nav.NavigateTo("/CreateAccountAdmin");
     }
@@ -40,5 +85,79 @@
     private void Logout() {
         userService.Logout();
         nav.NavigateTo("/");
+    }
+
+    private void BalanceReplenish() {
+        balanceReplenish = true;
+    }
+
+    private async void SaveReplenishment() {
+        errorMessage = "";
+        if (!userIsFound)
+        {
+            errorMessage = "Не удалось найти пользователя";
+            StateHasChanged();
+            return;
+        }
+        if(!canConvert) {
+            errorMessage = "Некорректная сумма";
+            StateHasChanged();
+            return;
+        }
+
+        User? user = await context.Users
+            .Where(x => x.Phone == phoneNumber)
+            .Include(s => s.Clients)
+            .FirstOrDefaultAsync();
+
+        user.Clients.FirstOrDefault().Balance += amountDecimal;
+        await context.SaveChangesAsync();
+        succesfullyReplenished = true;
+        StateHasChanged();
+    }
+
+    private void Cancel() {
+        phoneNumber = "";
+        amount = "";
+        balanceReplenish = false;
+        canConvert = false;
+        amountDecimal = 0;
+        userIsFound = false;
+        foundUser = "";
+        errorMessage = "";
+        succesfullyReplenished = false;
+        StateHasChanged();
+    }
+
+    private async void FindUser(string phone) {
+        errorMessage = "";
+        phoneNumber = phone;
+        if(phoneNumber.Length != 11) {
+            foundUser = "";
+            return;
+        }
+        found = await context.Users.Where(u => u.Phone == phoneNumber).FirstOrDefaultAsync();
+        if (found == null) foundUser = "Пользователь не найден";
+        else
+        {
+            foundUser = $"Найденный пользователь: {found.Fullname}";
+            userIsFound = true;
+        }
+        StateHasChanged();
+    }
+
+    private void ConvertValue(string value) {
+        errorMessage = "";
+        amount = value;
+        if (decimal.TryParse(amount, NumberStyles.Any, CultureInfo.CurrentCulture, out amountDecimal))
+        {
+            canConvert = true;
+        }
+        else canConvert = false;
+        StateHasChanged();
+    }
+
+    private void FinanceReports() {
+
     }
 }
