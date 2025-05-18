@@ -76,7 +76,19 @@ public class SessionBackgroundService : BackgroundService
                     _logger.LogInformation($"Сессия {session.Id} завершена");
                 }
 
-                if (reservationsToActivate.Any() || reservationsToCancel.Any() || endedSessions.Any())
+                var workStationsToFree = await dbContext.WorkStations
+                    .Include(x => x.Sessions)
+                    .Where(x => x.IdStatus == WorkStationStatus.Busy && 
+                    !x.Sessions.Any(a => a.StartTime < DateTime.Now && 
+                    a.StartTime.Value.AddHours(a.HoursCount.Value) > DateTime.Now ))
+                    .ToListAsync();
+
+                foreach(var workStation in workStationsToFree)
+                {
+                    workStation.IdStatus = WorkStationStatus.Free;
+                }
+
+                if (reservationsToActivate.Any() || reservationsToCancel.Any() || endedSessions.Any() || workStationsToFree.Any())
                 {
                     await dbContext.SaveChangesAsync(stoppingToken);
                 }

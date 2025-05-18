@@ -1,102 +1,115 @@
 ﻿@typeparam TValue
 
+<style>
+    .labeled-input-container {
+        position: relative;
+        width: 100%;
+        margin-top: 12px;
+    }
+
+    .custom-input-date::-webkit-calendar-picker-indicator {
+        filter: invert(90%) sepia(10%) saturate(500%) hue-rotate(330deg) brightness(105%) contrast(95%);
+    }
+
+    .input-label {
+        position: absolute;
+        top: -8px;
+        left: 12px;
+        background: @Background;
+        padding: 0 4px;
+        color: antiquewhite;
+        font-size: 12px;
+        font-family: Roboto;
+        z-index: 2;
+        pointer-events: none;
+    }
+
+    .input-field {
+        width: 100%;
+        height: 48px;
+        padding: 0 12px;
+        background: transparent;
+        border: 1px solid var(--Gold, #FBD61C);
+        border-radius: 4px;
+        color: antiquewhite;
+        font-family: Roboto;
+        font-size: 14px;
+    }
+
+        .input-field:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #FBD61C;
+        }
+</style>
+
 <div class="labeled-input-container">
     <label class="input-label">@Label</label>
     @if (IsDateOnly)
     {
         <InputDate @bind-Value="InternalDateTimeValue"
-        class="input-field"
-        @attributes="AdditionalAttributes"
-        @onchange="OnDateChanged"/>
+                   class="input-field"
+                   @attributes="AdditionalAttributes"
+                   @onchange="OnDateChanged" />
     }
     else
     {
-        <InputDate @bind-Value="Value"
-        class="input-field"
-        @attributes="AdditionalAttributes" />
+        <InputDate @bind-Value="InternalDateTimeValue"
+                   class="input-field"
+                   @attributes="AdditionalAttributes"
+                   @onchange="OnDateChanged" />
     }
 </div>
 
-<style>
-    .labeled-input-container {
-    position: relative;
-    width: 100%;
-    margin-top: 12px;
-    }
-
-    .custom-input-date::-webkit-calendar-picker-indicator {
-    filter: invert(90%) sepia(10%) saturate(500%) hue-rotate(330deg) brightness(105%) contrast(95%);
-    }
-
-    .input-label {
-    position: absolute;
-    top: -8px;
-    left: 12px;
-    background: @Background;
-    padding: 0 4px;
-    color: antiquewhite;
-    font-size: 12px;
-    font-family: Roboto;
-    z-index: 2;
-    pointer-events: none;
-    }
-
-    .input-field {
-    width: 100%;
-    height: 48px;
-    padding: 0 12px;
-    background: transparent;
-    border: 1px solid var(--Gold, #FBD61C);
-    border-radius: 4px;
-    color: antiquewhite;
-    font-family: Roboto;
-    font-size: 14px;
-    }
-
-    .input-field:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #FBD61C;
-    }
-</style>
-
 @code {
     [Parameter] public string Label { get; set; } = "Дата рождения";
-    [Parameter] public TValue Value { get; set; }
-    [Parameter] public EventCallback<TValue> ValueChanged { get; set; }
+    [Parameter] public TValue? Value { get; set; }
+    [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
     [Parameter] public string Background { get; set; } = "#34343C";
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; } = new();
 
     private bool IsDateOnly => typeof(TValue) == typeof(DateOnly) ||
-                             typeof(TValue) == typeof(DateOnly?);
+                             (Nullable.GetUnderlyingType(typeof(TValue)) == typeof(DateOnly));
 
     private DateTime? InternalDateTimeValue
     {
-        get => Value switch
+        get
         {
-            DateOnly date => date.ToDateTime(TimeOnly.MinValue),
-            _ => null
-        };
+            return Value switch
+            {
+                DateOnly date => date.ToDateTime(TimeOnly.MinValue),
+                DateTime dt => dt,
+                _ => null
+            };
+        }
         set
         {
             if (value.HasValue)
             {
-                var newValue = (TValue)(object)DateOnly.FromDateTime(value.Value);
+                var newValue = (TValue)(IsDateOnly
+                    ? (object)DateOnly.FromDateTime(value.Value)
+                    : value.Value);
+
                 ValueChanged.InvokeAsync(newValue);
             }
             else
             {
-                ValueChanged.InvokeAsync(default);
+                // Для nullable типов
+                if (Nullable.GetUnderlyingType(typeof(TValue)) != null)
+                {
+                    ValueChanged.InvokeAsync(default);
+                }
             }
         }
     }
 
     private void OnDateChanged(ChangeEventArgs e)
     {
-        if (IsDateOnly && e.Value is DateTime dt)
+        if (e.Value is DateTime dt ||
+           (e.Value == null && Nullable.GetUnderlyingType(typeof(TValue)) != null))
         {
-            InternalDateTimeValue = dt;
+            InternalDateTimeValue = e.Value as DateTime?;
         }
     }
 }

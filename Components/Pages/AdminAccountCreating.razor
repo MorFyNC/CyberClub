@@ -22,13 +22,13 @@
                  </div> 
              } 
 
-             <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; gap: 20px; width: 100%;"> 
-                 <MyTextField LabelText="Номер телефона" IsPhoneNumber="true" @bind-Value="phoneNumber"></MyTextField> 
-                 @if (!requireData) 
-                 { 
-                     <MyTextField LabelText="ФИО" @bind-Value="fullname" /> 
-                     <LabledInputDate @bind-Value="birthDate" TValue="DateOnly" Label="Дата рождения" /> 
-                 } 
+             <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; gap: 20px; width: 100%;">
+                <MyTextField Background="#151818" LabelText="Номер телефона" IsPhoneNumber="true" @bind-Value="phoneNumber"></MyTextField>
+                @if (!requireData) 
+                 {
+                    <MyTextField Background="#151818" LabelText="ФИО" @bind-Value="fullname" />
+                    <LabledInputDate Background="#151818" @bind-Value="birthDate" TValue="DateOnly" Label="Дата рождения" />
+                } 
                  <LabledInputCheckbox @bind-Value="requireData" Label="Запросить данные у пользователя"></LabledInputCheckbox> 
 
                  <MyBorders> 

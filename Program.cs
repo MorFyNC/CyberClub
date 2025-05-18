@@ -16,6 +16,7 @@ builder.Services.AddDbContext<BootcampContext>(options =>
 builder.Services.AddHostedService<SessionBackgroundService>();
 
 builder.Services.AddSingleton<UserService>();
+builder.Services.AddScoped<ExcelReportService>();
 
 var app = builder.Build();
 

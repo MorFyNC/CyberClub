@@ -2,6 +2,7 @@
 @inject NavigationManager nav
 @inject UserService userService
 @inject BootcampContext context
+@inject ExcelReportService excelReportService
 @rendermode InteractiveServer
 
 <PageContainer>
@@ -21,7 +22,7 @@
                 <MyButton ButtonText="Пополнить баланс пользователя" OnClick="BalanceReplenish"></MyButton>
             </MyBorders>
             <MyBorders>
-                <MyButton ButtonText="Отчеты" OnClick="FinanceReports"></MyButton>
+                <MyButton ButtonText="Финансовый отчет" OnClick="FinanceReport"></MyButton>
             </MyBorders>
             <MyBorders>
                 <MyButton ButtonText="Выход" OnClick="Logout"></MyButton>
@@ -33,9 +34,9 @@
 
 @if(balanceReplenish && !succesfullyReplenished) {
     <ModalWindow ErrorMessage="@errorMessage" Title="Пополнение баланса пользователя">
-        <MyTextField IsPhoneNumber="true" LabelText="Номер телефона пользователя" ValueChanged="FindUser"></MyTextField>
+        <MyTextField Background="#151818" IsPhoneNumber="true" LabelText="Номер телефона пользователя" ValueChanged="FindUser"></MyTextField>
         <label style="color: antiquewhite">@foundUser</label>
-        <MyTextField LabelText="Сумма пополнения" ValueChanged="ConvertValue"></MyTextField>
+        <MyTextField Background="#151818" LabelText="Сумма пополнения" ValueChanged="ConvertValue"></MyTextField>
 
         <div style="display: flex; flex-direction: row; align-items: start; justify-items: end; gap: 20px;">
             <MyBorders>
@@ -51,11 +52,26 @@
 else if (succesfullyReplenished) {
     <ModalWindow Title="@($"Баланс пользователя {found?.Fullname} пополнен на {amount} рублей")">
         <MyBorders>
-            <MyButton title="Ок" OnClick="Cancel"></MyButton>
+            <MyButton ButtonText="Ок" OnClick="Cancel"></MyButton>
         </MyBorders>
     </ModalWindow>
 }
+@if(generatingReport) {
+    <ModalWindow Title="Финансовый отчет">
+        <LabledInputDate @bind-Value="reportStartDate" TValue="DateTime?" Background="#151818" Label="Начиная"></LabledInputDate>
+        <LabledInputDate @bind-Value="reportEndDate" TValue ="DateTime?" Background="#151818" Label="Заканчивая"></LabledInputDate>
 
+        <div style="display: flex; flex-direction: row; align-items: center; justify-items: center; gap: 20px;">
+            <MyBorders>
+                <MyButton ButtonText="Сгенерировать отчет" OnClick="async () => await GenerateReport()"></MyButton>
+            </MyBorders>
+            <MyBorders>
+                <MyButton ButtonText="Отмена" OnClick="Cancel"></MyButton>
+            </MyBorders>
+        </div>
+
+    </ModalWindow>
+}
 @code {
     private bool balanceReplenish = false;
 
@@ -68,6 +84,11 @@ else if (succesfullyReplenished) {
     private string errorMessage = "";
     private bool succesfullyReplenished = false;
     private User? found = null;
+
+    private bool generatingReport = false;
+    private DateTime? reportStartDate;
+    private DateTime? reportEndDate;
+    private bool isGenerating = false;
 
     private void AddNewUser() {
         nav.NavigateTo("/CreateAccountAdmin");
@@ -109,8 +130,10 @@ else if (succesfullyReplenished) {
             .Where(x => x.Phone == phoneNumber)
             .Include(s => s.Clients)
             .FirstOrDefaultAsync();
-
-        user.Clients.FirstOrDefault().Balance += amountDecimal;
+        var client = user.Clients.FirstOrDefault();
+        client.Balance += amountDecimal;
+        BalanceReplenishment balanceReplenishment = new BalanceReplenishment() { Amount = amountDecimal, IdClient = client.Id, ReplenishmentType = ReplenishmentType.Cash };
+        context.BalanceReplenishments.Add(balanceReplenishment);
         await context.SaveChangesAsync();
         succesfullyReplenished = true;
         StateHasChanged();
@@ -126,6 +149,9 @@ else if (succesfullyReplenished) {
         foundUser = "";
         errorMessage = "";
         succesfullyReplenished = false;
+        generatingReport = false;
+        reportStartDate = null;
+        reportEndDate = null;
         StateHasChanged();
     }
 
@@ -157,7 +183,34 @@ else if (succesfullyReplenished) {
         StateHasChanged();
     }
 
-    private void FinanceReports() {
+    private void FinanceReport() {
+        generatingReport = true;
+        StateHasChanged();
+    }
 
+    private async Task GenerateReport()
+    {
+        if (isGenerating) return;
+
+        isGenerating = true;
+        try
+        {
+            var fileContent = await excelReportService.GenerateFinancialReport(reportStartDate, reportEndDate);
+            var fileName = $"FinancialReport_{reportStartDate:yyyyMMdd}_{reportEndDate:yyyyMMdd}.xlsx";
+
+            var base64Content = Convert.ToBase64String(fileContent);
+
+            var url = $"data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{base64Content}";
+
+            nav.NavigateTo(url, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка генерации отчета: {ex.Message}");
+        }
+        finally
+        {
+            isGenerating = false;
+        }
     }
 }

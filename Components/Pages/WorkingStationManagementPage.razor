@@ -99,6 +99,7 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
                     @errorMessage
                 </div>
             }
+            <h5 style="color: antiquewhite">Статус: @selectedWorkStation?.IdStatusNavigation?.Name</h5>
             <MyBorders>
                 <MyButton ButtonText="Создать бронь на эту станцию" OnClick="CreateReservation" AdditionalStyles="align-self: center; "></MyButton>
             </MyBorders>
@@ -170,12 +171,12 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
             </div>
         }
         <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; justify-items: center; height: 40vh">
-            <MyTextField Background="#151818" LabelText="Пользователь" @bind-Value="userPhone" IsPhoneNumber="true"></MyTextField>
-
+            <MyTextField LabelText="Пользователь" @bind-Value="userPhone" IsPhoneNumber="true" Background="#151818"></MyTextField>
+            
             @if (!instantReservation)
             {
-                <LabledInputDate Background="#151818" TValue="DateTime" Label="Дата начала брони" @bind-Value="reservationStartDate"></LabledInputDate>
-                <MyTimePicker Background="#151818" TValue="TimeOnly" @bind-Value="reservationStartTime" Label="Время начала брони"></MyTimePicker>
+                <LabledInputDate TValue="DateTime" Label="Дата начала брони" @bind-Value="reservationStartDate" Background="#151818"></LabledInputDate>
+                <MyTimePicker TValue="TimeOnly" @bind-Value="reservationStartTime" Label="Время начала брони" Background="#151818"></MyTimePicker>
             }
 
             <MyTextField LabelText="Количество часов" Background="#151818" @bind-Value="hoursCount"></MyTextField>
@@ -258,7 +259,7 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
     private async void SelectArea(int workStationId)
     {
         selectedWorkStationId = workStationId.ToString();
-        WorkStation workStation = await context.WorkStations.Where(x => x.Id == workStationId).FirstOrDefaultAsync();
+        WorkStation workStation = await context.WorkStations.Where(x => x.Id == workStationId).Include(a => a.IdStatusNavigation).FirstOrDefaultAsync();
         if(workStation == null) {
             isWorkStationExisting = false;
             selectedWorkStation = new WorkStation() { Id = workStationId };
@@ -374,8 +375,8 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
     private async void CreateReservation() {
         errorMessage = "";
         var status = await context.WorkStationStatuses.Where(x => x.Id == selectedWorkStation.IdStatus).FirstOrDefaultAsync();
-        if(status.CanReserve != true || selectedWorkStation.IsBlocked == true) {
-            errorMessage = "Данную рабочую станцию нельзя забронировать на данный момент";
+        if(selectedWorkStation.IsBlocked == true) {
+            errorMessage = "Рабочая станция заблокирована";
             StateHasChanged();
             return;
         }
@@ -391,7 +392,7 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
             StateHasChanged();
             return;
         }
-        if(!instantReservation && (reservationStartDate.Day < DateTime.Now.Day || reservationStartTime < TimeOnly.FromDateTime(DateTime.Now))) {
+        if(!instantReservation && (reservationStartDate.Day < DateTime.Now.Day && reservationStartTime < TimeOnly.FromDateTime(DateTime.Now))) {
             errorMessage = "Некорректная дата/время";
             StateHasChanged();
             return;
@@ -401,6 +402,15 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
             StateHasChanged();
             return;
         }
+
+        if (!await IsWorkStationAvailable(
+            selectedWorkStation.Id, 
+            new DateTime(reservationStartDate.Year, reservationStartDate.Month, reservationStartDate.Day, reservationStartTime.Hour, reservationStartTime.Minute, reservationStartTime.Second),
+            hoursCountInt)){
+                errorMessage = "В указаное время рабочая станция будет занята";
+                StateHasChanged();
+                return;
+            }
 
         var user = await context.Users.Where(x => x.Phone == userPhone).FirstOrDefaultAsync();
 
@@ -415,6 +425,20 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
         this.client = client;
         totalPay = hoursCountInt * selectedWorkStation.Cost;
         StateHasChanged();
+    }
+
+    private async Task<bool> IsWorkStationAvailable(int workStationId, DateTime startTime, int hoursCount)
+    {
+        DateTime endTime = startTime.AddHours(hoursCount);
+
+        bool isOccupied = await context.Sessions
+            .AnyAsync(s => s.IdWorkStation == workStationId &&
+                          s.StartTime.HasValue &&
+                          s.HoursCount.HasValue &&
+                          s.StartTime.Value <= endTime.AddMinutes(5) &&
+                          s.StartTime.Value.AddHours(s.HoursCount.Value) >= startTime.AddMinutes(-5));
+
+        return !isOccupied;
     }
 
     private async void SaveReservation()
