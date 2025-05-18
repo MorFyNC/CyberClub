@@ -17,5 +17,7 @@ public partial class SessionPayment
 
     public int? HoursFromMembership { get; set; }
 
+    public virtual BonusMove? BonusesSpentNavigation { get; set; }
+
     public virtual Session? IdSessionNavigation { get; set; }
 }

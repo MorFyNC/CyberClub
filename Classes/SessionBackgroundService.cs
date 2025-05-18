@@ -60,7 +60,8 @@ public class SessionBackgroundService : BackgroundService
                                (s.StartTime.Value.AddHours(s.HoursCount.Value) <= now || s.Reservations.FirstOrDefault().ReservationStatus == ReservationStatus.Cancelled) &&
                                s.IdWorkStationNavigation != null &&
                                s.IdWorkStationNavigation.IdStatus == WorkStationStatus.Busy && 
-                               s.Reservations.FirstOrDefault().ReservationStatus != ReservationStatus.Finished)
+                               (s.Reservations.FirstOrDefault().ReservationStatus != ReservationStatus.Finished &&
+                               s.Reservations.FirstOrDefault().ReservationStatus != ReservationStatus.Cancelled))
                                 .ToListAsync(stoppingToken);
 
                 foreach (var session in endedSessions)
@@ -79,8 +80,8 @@ public class SessionBackgroundService : BackgroundService
                 var workStationsToFree = await dbContext.WorkStations
                     .Include(x => x.Sessions)
                     .Where(x => x.IdStatus == WorkStationStatus.Busy && 
-                    !x.Sessions.Any(a => a.StartTime < DateTime.Now && 
-                    a.StartTime.Value.AddHours(a.HoursCount.Value) > DateTime.Now ))
+                    !x.Sessions.Any(a => a.StartTime <= DateTime.Now && 
+                    a.StartTime.Value.AddHours(a.HoursCount.Value) >= DateTime.Now ))
                     .ToListAsync();
 
                 foreach(var workStation in workStationsToFree)
@@ -88,10 +89,23 @@ public class SessionBackgroundService : BackgroundService
                     workStation.IdStatus = WorkStationStatus.Free;
                 }
 
-                if (reservationsToActivate.Any() || reservationsToCancel.Any() || endedSessions.Any() || workStationsToFree.Any())
+                var workStationsToBusy = await dbContext.WorkStations
+                    .Include(x => x.Sessions)
+                    .Where(x => x.IdStatus == WorkStationStatus.Free &&
+                   x.Sessions.Any(a => a.StartTime <= DateTime.Now && a.StartTime.Value.AddHours(a.HoursCount.Value) >= DateTime.Now))
+                    .ToListAsync();
+
+                foreach (var workstation in workStationsToBusy)
+                {
+                    workstation.IdStatus = WorkStationStatus.Busy;
+                }
+
+                if (reservationsToActivate.Any() || reservationsToCancel.Any() || endedSessions.Any() || workStationsToFree.Any() || workStationsToBusy.Any())
                 {
                     await dbContext.SaveChangesAsync(stoppingToken);
                 }
+
+                
             }
 
             await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);

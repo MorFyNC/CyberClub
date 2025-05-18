@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using CyberClub.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CyberClub.Database;
@@ -17,6 +16,8 @@ public partial class BootcampContext : DbContext
     }
 
     public virtual DbSet<BalanceReplenishment> BalanceReplenishments { get; set; }
+
+    public virtual DbSet<BonusMove> BonusMoves { get; set; }
 
     public virtual DbSet<Client> Clients { get; set; }
 
@@ -73,6 +74,18 @@ public partial class BootcampContext : DbContext
             entity.HasOne(d => d.ReplenishmentTypeNavigation).WithMany(p => p.BalanceReplenishments)
                 .HasForeignKey(d => d.ReplenishmentType)
                 .HasConstraintName("FK_BalanceReplenishment_ReplenishmentType");
+        });
+
+        modelBuilder.Entity<BonusMove>(entity =>
+        {
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.Client).WithMany(p => p.BonusMoves)
+                .HasForeignKey(d => d.ClientId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_BonusMoves_Client");
         });
 
         modelBuilder.Entity<Client>(entity =>
@@ -220,6 +233,10 @@ public partial class BootcampContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.IdSession).HasColumnName("Id_Session");
             entity.Property(e => e.TotalCost).HasColumnType("decimal(10, 2)");
+
+            entity.HasOne(d => d.BonusesSpentNavigation).WithMany(p => p.SessionPayments)
+                .HasForeignKey(d => d.BonusesSpent)
+                .HasConstraintName("FK_SessionPayment_BonusMoves");
 
             entity.HasOne(d => d.IdSessionNavigation).WithMany(p => p.SessionPayments)
                 .HasForeignKey(d => d.IdSession)

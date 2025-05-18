@@ -4,8 +4,8 @@
 @inject NavigationManager nav
 @inject UserService userService
 <PageContainer>
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; max-width: 400px; margin: 0 auto; padding-top: 100px;">
-        <div style="display: flex; justify-content: center; width: 100%; margin-bottom: 10px;">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; width: 220px; margin: 0 auto; padding-top: 100px;">
+        <div style="display: flex; justify-content: center; width: 10vw; margin-bottom: 10px;">
             <Logo></Logo>
         </div>
         <h1 style="color: antiquewhite; text-align: center; width: 100%; margin: 0; font-size: 1.5rem; display: flex; align-content:center; justify-content: center;">
@@ -102,7 +102,7 @@
                 return;
             }
             userService.CurrentUser = user;
-            userService.CurrentClient = await _context.Clients.Where(x => x.IdUser == user.Id).FirstOrDefaultAsync();
+            userService.CurrentClient = await _context.Clients.Where(x => x.IdUser == user.Id).Include(l => l.LoyalityLevelNavigation).FirstOrDefaultAsync();
             nav.NavigateTo("/home");
         }
         else errorMessage = "Введен неправильный пароль";

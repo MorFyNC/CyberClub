@@ -46,17 +46,17 @@
     <label class="input-label">@Label</label>
     @if (IsDateOnly)
     {
-        <InputDate @bind-Value="InternalDateTimeValue"
+        <InputDate @bind-Value="CurrentDateTimeValue"
                    class="input-field"
                    @attributes="AdditionalAttributes"
-                   @onchange="OnDateChanged" />
+                   @oninput="HandleInput" />
     }
     else
     {
-        <InputDate @bind-Value="InternalDateTimeValue"
+        <InputDate @bind-Value="CurrentDateTimeValue"
                    class="input-field"
                    @attributes="AdditionalAttributes"
-                   @onchange="OnDateChanged" />
+                   @oninput="HandleInput" />
     }
 </div>
 
@@ -72,44 +72,56 @@
     private bool IsDateOnly => typeof(TValue) == typeof(DateOnly) ||
                              (Nullable.GetUnderlyingType(typeof(TValue)) == typeof(DateOnly));
 
-    private DateTime? InternalDateTimeValue
+    private DateTime? _currentDateTimeValue;
+    private DateTime? CurrentDateTimeValue
     {
-        get
-        {
-            return Value switch
-            {
-                DateOnly date => date.ToDateTime(TimeOnly.MinValue),
-                DateTime dt => dt,
-                _ => null
-            };
-        }
+        get => _currentDateTimeValue ?? ConvertToDateTime(Value);
         set
         {
-            if (value.HasValue)
-            {
-                var newValue = (TValue)(IsDateOnly
-                    ? (object)DateOnly.FromDateTime(value.Value)
-                    : value.Value);
+            if (_currentDateTimeValue == value) return;
 
-                ValueChanged.InvokeAsync(newValue);
-            }
-            else
-            {
-                // Для nullable типов
-                if (Nullable.GetUnderlyingType(typeof(TValue)) != null)
-                {
-                    ValueChanged.InvokeAsync(default);
-                }
-            }
+            _currentDateTimeValue = value;
+            UpdateValue(value);
         }
     }
 
-    private void OnDateChanged(ChangeEventArgs e)
+    private DateTime? ConvertToDateTime(TValue? value)
     {
-        if (e.Value is DateTime dt ||
-           (e.Value == null && Nullable.GetUnderlyingType(typeof(TValue)) != null))
+        return value switch
         {
-            InternalDateTimeValue = e.Value as DateTime?;
+            DateOnly date => date.ToDateTime(TimeOnly.MinValue),
+            DateTime dt => dt,
+            _ => null
+        };
+    }
+
+    private void HandleInput(ChangeEventArgs e)
+    {
+        if (string.IsNullOrEmpty(e.Value?.ToString()))
+        {
+            _currentDateTimeValue = null;
+            return;
         }
+    }
+
+    private void UpdateValue(DateTime? value)
+    {
+        if (value.HasValue)
+        {
+            var newValue = (TValue)(IsDateOnly
+                ? (object)DateOnly.FromDateTime(value.Value)
+                : value.Value);
+
+            ValueChanged.InvokeAsync(newValue);
+        }
+        else if (Nullable.GetUnderlyingType(typeof(TValue)) != null)
+        {
+            ValueChanged.InvokeAsync(default);
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        _currentDateTimeValue = null;
     }
 }

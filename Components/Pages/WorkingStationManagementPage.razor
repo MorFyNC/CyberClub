@@ -172,7 +172,7 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
         }
         <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; justify-items: center; height: 40vh">
             <MyTextField LabelText="Пользователь" @bind-Value="userPhone" IsPhoneNumber="true" Background="#151818"></MyTextField>
-            
+
             @if (!instantReservation)
             {
                 <LabledInputDate TValue="DateTime" Label="Дата начала брони" @bind-Value="reservationStartDate" Background="#151818"></LabledInputDate>
@@ -375,6 +375,7 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
     private async void CreateReservation() {
         errorMessage = "";
         var status = await context.WorkStationStatuses.Where(x => x.Id == selectedWorkStation.IdStatus).FirstOrDefaultAsync();
+
         if(selectedWorkStation.IsBlocked == true) {
             errorMessage = "Рабочая станция заблокирована";
             StateHasChanged();
@@ -407,10 +408,10 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
             selectedWorkStation.Id, 
             new DateTime(reservationStartDate.Year, reservationStartDate.Month, reservationStartDate.Day, reservationStartTime.Hour, reservationStartTime.Minute, reservationStartTime.Second),
             hoursCountInt)){
-                errorMessage = "В указаное время рабочая станция будет занята";
-                StateHasChanged();
-                return;
-            }
+            errorMessage = "В указаное время рабочая станция будет занята";
+            StateHasChanged();
+            return;
+        }
 
         var user = await context.Users.Where(x => x.Phone == userPhone).FirstOrDefaultAsync();
 
@@ -432,11 +433,12 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
         DateTime endTime = startTime.AddHours(hoursCount);
 
         bool isOccupied = await context.Sessions
-            .AnyAsync(s => s.IdWorkStation == workStationId &&
+            .Include(x => x.IdWorkStationNavigation)
+            .AnyAsync(s => (s.IdWorkStation == workStationId &&
                           s.StartTime.HasValue &&
                           s.HoursCount.HasValue &&
                           s.StartTime.Value <= endTime.AddMinutes(5) &&
-                          s.StartTime.Value.AddHours(s.HoursCount.Value) >= startTime.AddMinutes(-5));
+                          s.StartTime.Value.AddHours(s.HoursCount.Value) >= startTime.AddMinutes(-5)));
 
         return !isOccupied;
     }
@@ -461,7 +463,7 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
             SessionPayment sessionPayment = new SessionPayment()
                 {
                     TotalCost = hoursCountInt * selectedWorkStation.Cost,
-                    BonusesSpent = 0,
+                    BonusesSpent = null,
                     HoursFromMembership = 0,
                     IdSession = session.Id
                 };
@@ -475,7 +477,19 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
                 ReservationStatus = instantReservation ? 1 : 4,
             };
 
+            selectedWorkStation.IdStatus = instantReservation ? WorkStationStatus.Busy : WorkStationStatus.Free;
 
+            var loyalityLevel = await context.LoyalityLevels.Where(x => x.Id == client.LoyalityLevel).FirstOrDefaultAsync();
+            client.Bonuses += session.HoursCount * (10 + loyalityLevel.BonusIncrease);
+
+            var bonusMove = new BonusMove()
+            {
+                Amount = 10 + loyalityLevel.BonusIncrease.Value,
+                ClientId = client.Id
+            };
+
+            context.BonusMoves.Add(bonusMove);
+            userService.CheckLevel(client);
 
             context.Reservations.Add(reservation);
             await context.SaveChangesAsync();

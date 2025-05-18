@@ -1,0 +1,312 @@
+﻿@using CyberClub.Database
+@inject BootcampContext DbContext
+@inject UserService userService
+
+<style>
+    .transaction-history {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+        color: antiquewhite;
+        font-family: inherit;
+    }
+
+    .transaction-categories {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #FBD61C;
+    }
+
+        .transaction-categories button {
+            background: #151818;
+            color: antiquewhite;
+            border: 1px solid #FBD61C;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+            .transaction-categories button:hover {
+                background: rgba(251, 214, 28, 0.1);
+            }
+
+            .transaction-categories button.active {
+                background: #FBD61C;
+                color: #151818;
+                font-weight: bold;
+            }
+
+    .transactions-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: 60vh;
+        overflow-y: auto;
+        padding-right: 8px;
+    }
+
+        /* Полоса прокрутки */
+        .transactions-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .transactions-list::-webkit-scrollbar-track {
+            background: #151818;
+        }
+
+        .transactions-list::-webkit-scrollbar-thumb {
+            background: #FBD61C;
+            border-radius: 3px;
+        }
+
+    .transaction-item {
+        background: rgba(21, 24, 24, 0.8);
+        border-left: 4px solid #FBD61C;
+        border-radius: 4px;
+        padding: 12px 16px;
+        transition: transform 0.2s ease;
+    }
+
+        .transaction-item:hover {
+            transform: translateX(5px);
+        }
+
+    .transaction-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+    }
+
+    .transaction-type {
+        font-weight: bold;
+        color: #FBD61C;
+    }
+
+    .transaction-date {
+        color: rgba(250, 235, 215, 0.7);
+        font-size: 0.8rem;
+    }
+
+    .transaction-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .amount {
+        font-weight: bold;
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+
+        .amount.positive {
+            color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .amount.negative {
+            color: #F44336;
+            background: rgba(244, 67, 54, 0.1);
+        }
+
+    .bonuses {
+        color: #FFC107;
+        font-size: 0.8rem;
+        background: rgba(255, 193, 7, 0.1);
+        padding: 2px 6px;
+        border-radius: 4px;
+    }
+
+    .loading, .empty {
+        text-align: center;
+        padding: 20px;
+        color: rgba(250, 235, 215, 0.7);
+    }
+
+    /* Специфичные цвета для типов транзакций */
+    .transaction-item.balance {
+        border-left-color: #4CAF50;
+    }
+
+    .transaction-item.session {
+        border-left-color: #F44336;
+    }
+
+    .transaction-item.membership {
+        border-left-color: #9C27B0;
+    }
+
+    .transaction-item.bonus {
+        border-left-color: #FFC107;
+    }
+</style>
+
+<div class="transaction-history">
+    <div class="transactions-list">
+        @if (transactions == null)
+        {
+            <div class="loading">Загрузка...</div>
+        }
+        else if (!transactions.Any())
+        {
+            <div class="empty">Нет транзакций</div>
+        }
+        else
+        {
+            foreach (var transaction in filteredTransactions)
+            {
+                <div class="transaction-item @transaction.Type.ToLower()">
+                    <div class="transaction-header">
+                        <span class="transaction-type">@GetTypeName(transaction.Type)</span>
+                        <span class="transaction-date">@transaction.Date.ToString("dd.MM.yyyy HH:mm")</span>
+                    </div>
+                    <div class="transaction-details">
+                        @if (transaction.Type == "Balance")
+                        {
+                            <span class="amount @(transaction.Amount > 0 ? "positive" : "negative")">
+                                @(transaction.Amount > 0 ? "+" : "")@transaction.Amount руб.
+                            </span>
+                        }
+                        else if (transaction.Type == "Session")
+                        {
+                            <span>Компьютер @transaction.WorkStationId</span>
+                            <span class="amount negative">-@transaction.Amount руб.</span>
+                            @if (transaction.BonusesSpent > 0)
+                            {
+                                <span class="bonuses">Списано бонусов: @transaction.BonusesSpent</span>
+                            }
+                        }
+                        else if (transaction.Type == "Membership")
+                        {
+                            <span>@transaction.MembershipName</span>
+                            <span class="amount negative">-@transaction.Amount руб.</span>
+                        }
+                        else if (transaction.Type == "Bonus")
+                        {
+                            <span>@transaction.Description</span>
+                            <span class="amount @(transaction.Amount > 0 ? "positive" : "negative")">
+                                @(transaction.Amount > 0 ? "+" : "")@transaction.Amount бон.
+                            </span>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    private List<Transaction> transactions;
+    private List<Transaction> filteredTransactions;
+    private string ActiveTab = "all";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTransactions();
+    }
+
+    private async Task LoadTransactions()
+    {
+        var clientId = userService.CurrentClient.Id;
+
+        // Получаем все типы транзакций
+        var balanceTransactions = await DbContext.BalanceReplenishments
+            .Where(b => b.IdClient == clientId)
+            .Select(b => new Transaction
+                {
+                    Type = "Balance",
+                    Date = b.CreatedAt ?? DateTime.Now,
+                    Amount = b.Amount ?? 0,
+                    Description = "Пополнение баланса"
+                }).ToListAsync();
+
+        var sessionTransactions = await DbContext.Sessions
+            .Where(s => s.IdClient == clientId)
+            .SelectMany(s => s.SessionPayments)
+            .Select(sp => new Transaction
+                {
+                    Type = "Session",
+                    Date = sp.CreatedAt ?? DateTime.Now,
+                    Amount = sp.TotalCost ?? 0,
+                    WorkStationId = sp.IdSessionNavigation.IdWorkStation,
+                    BonusesSpent = sp.BonusesSpent ?? 0,
+                    Description = "Оплата сессии"
+                }).ToListAsync();
+
+        var membershipTransactions = await DbContext.MembershipBuys
+            .Where(m => m.IdClient == clientId)
+            .Select(m => new Transaction
+                {
+                    Type = "Membership",
+                    Date = m.CreatedAt ?? DateTime.Now,
+                    Amount = m.IdMembershipNavigation.Price ?? 0,
+                    MembershipName = m.IdMembershipNavigation.Name,
+                    Description = "Покупка абонемента"
+                }).ToListAsync();
+
+        var bonusTransactions = await DbContext.BonusMoves
+            .Where(b => b.ClientId == clientId)
+            .Select(b => new Transaction
+                {
+                    Type = "Bonus",
+                    Date = b.CreatedAt,
+                    Amount = b.Amount,
+                    Description = b.Amount > 0 ? "Начисление бонусов" : "Списание бонусов"
+                }).ToListAsync();
+
+        // Объединяем все транзакции и сортируем по дате
+        transactions = balanceTransactions
+            .Concat(sessionTransactions)
+            .Concat(membershipTransactions)
+            .Concat(bonusTransactions)
+            .OrderByDescending(t => t.Date)
+            .ToList();
+
+        filteredTransactions = transactions;
+    }
+
+    private void SetActiveTab(string tab)
+    {
+        ActiveTab = tab;
+        filteredTransactions = tab switch
+        {
+            "all" => transactions,
+            "balance" => transactions.Where(t => t.Type == "Balance").ToList(),
+            "sessions" => transactions.Where(t => t.Type == "Session").ToList(),
+            "memberships" => transactions.Where(t => t.Type == "Membership").ToList(),
+            "bonuses" => transactions.Where(t => t.Type == "Bonus").ToList(),
+            _ => transactions
+        };
+    }
+
+    private string GetTypeName(string type)
+    {
+        return type switch
+        {
+            "Balance" => "Пополнение",
+            "Session" => "Сессия",
+            "Membership" => "Абонемент",
+            "Bonus" => "Бонусы",
+            _ => type
+        };
+    }
+
+    private class Transaction
+    {
+        public string Type { get; set; }
+        public DateTime Date { get; set; }
+        public decimal Amount { get; set; }
+        public string Description { get; set; }
+        public int? WorkStationId { get; set; }
+        public int BonusesSpent { get; set; }
+        public string MembershipName { get; set; }
+    }
+}

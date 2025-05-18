@@ -6,19 +6,16 @@
 
 <PageContainer>
     <div style="display: flex; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box;">
-        <!-- Центрированный контейнер содержимого -->
-        <div style="display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 400px; gap: 24px;">
+        <div style="display: flex; flex-direction: column; align-items: center; width: 220px; max-width: 400px; gap: 24px;">
+            <div style="width: 10vw">
+                <Logo></Logo>
+            </div>
 
-            <!-- Логотип -->
-            <Logo></Logo>
-
-            <!-- Заголовок -->
             <h1 style="color: antiquewhite; text-align: center; width: 200%; margin: 0;
                     font-size: 1.25rem; line-height: 1.4; padding: 0 10px;">
                 Вам необходимо заполнить некоторые данные чтобы продолжить
             </h1>
 
-            <!-- Сообщение об ошибке -->
             @if (!string.IsNullOrEmpty(errorMessage))
             {
                 <div style="color: #ff6b6b; background: rgba(255, 107, 107, 0.1);
@@ -28,11 +25,10 @@
                 </div>
             }
 
-            <!-- Форма -->
-            <div style="display: flex; flex-direction: column; gap: 20px; width: 100%;">
-                <MyTextField LabelText="ФИО" @bind-Value="fullname" style="width: 100%;" />
-                <MyTextField LabelText="Пароль" @bind-Value="password" style="width: 100%;" />
-                <LabledInputDate @bind-Value="birthDate" style="width: 100%;" TValue="DateOnly" Label="Дата рождения" />
+            <div style="display: flex; flex-direction: column; gap: 20px; width: 100%; justify-items: center; align-items: center;">
+                <MyTextField LabelText="ФИО" @bind-Value="fullname" />
+                <MyTextField LabelText="Пароль" @bind-Value="password" style="width: 220px;" />
+                <LabledInputDate @bind-Value="birthDate" style="width: 100%;" Label="Дата рождения" />
 
                 <MyBorders>
                     <MyButton ButtonText="Сохранить данные"
@@ -74,14 +70,17 @@
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
-            var savedUser = await _context.Users.Where(x => x.Phone == userService.CurrentUser.Phone).FirstOrDefaultAsync();
+            var savedUser = await _context.Users.Where(x => x.Phone == userService.CurrentUser.Phone)
+                .FirstOrDefaultAsync();
 
             var newClient = new Client() { IdUser = savedUser.Id, Balance = 0, Bonuses = 0, LoyalityLevel = 1 };
 
             await _context.Clients.AddAsync(newClient);
             await _context.SaveChangesAsync();
 
-            var savedClient = await _context.Clients.Where(x => x.IdUser == savedUser.Id).FirstOrDefaultAsync();
+            var savedClient = await _context.Clients.Where(x => x.IdUser == savedUser.Id)
+                .Include(l => l.LoyalityLevelNavigation)
+                .FirstOrDefaultAsync();
 
             userService.CurrentUser = savedUser;
             userService.CurrentClient = savedClient;

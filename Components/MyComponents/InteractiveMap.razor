@@ -1,70 +1,91 @@
-﻿<svg width="800" height="450" viewBox="0 0 800 450" style="outline: 3px #FBD61C solid">
-    <image href="бутка.jpg" width="800" height="450" />
+﻿<style >
+    .interactive-map-container {
+        position: relative;
+        z-index: 10;
+    }
 
-    <rect x="118.38" y="74.93" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(1)" />
-    <rect x="143.36" y="74.93" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(2)" />
-    <rect x="168.36" y="74.93" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(3)" />
-    <rect x="32.11" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(4)" />
-    <rect x="56.69" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(5)" />
-    <rect x="80.86" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(6)" />
-    <rect x="254.61" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(7)" />
-    <rect x="229.61" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(8)" />
-    <rect x="204.61" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(9)" />
-    <rect x="179.61" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(10)" />
-    <rect x="155.44" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(11)" />
-    <rect x="130.44" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(12)" />
-    <rect x="105.86" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(13)" />
-    <rect x="104.19" y="197.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(14)" />
-    <rect x="128.36" y="197.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(15)" />
-    <rect x="153.36" y="197.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(16)" />
-    <rect x="178.36" y="197.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(17)" />
-    <rect x="104.19" y="222.43" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(18)" />
-    <rect x="128.36" y="222.43" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(19)" />
-    <rect x="153.36" y="222.43" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(20)" />
-    <rect x="178.36" y="222.43" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(21)" />
-    <rect x="104.19" y="271.60" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(22)" />
-    <rect x="128.78" y="271.60" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(23)" />
-    <rect x="153.36" y="271.60" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(24)" />
-    <rect x="177.94" y="271.60" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(25)" />
-    <rect x="202.53" y="271.60" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(26)" />
-    <rect x="308.78" y="68.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(27)" />
-    <rect x="456.28" y="68.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(28)" />
-    <rect x="431.69" y="68.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(29)" />
-    <rect x="407.11" y="68.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(30)" />
-    <rect x="382.53" y="68.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(31)" />
-    <rect x="357.94" y="68.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(32)" />
-    <rect x="333.36" y="68.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(33)" />
-    <rect x="308.78" y="117.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(34)" />
-    <rect x="456.28" y="117.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(35)" />
-    <rect x="431.69" y="117.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(36)" />
-    <rect x="382.53" y="117.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(37)" />
-    <rect x="357.94" y="117.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(38)" />
-    <rect x="333.36" y="117.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(39)" />
-    <rect x="313.78" y="219.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(40)" />
-    <rect x="338.36" y="219.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(41)" />
-    <rect x="362.94" y="219.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(42)" />
-    <rect x="313.78" y="268.27" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(43)" />
-    <rect x="338.36" y="268.27" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(44)" />
-    <rect x="362.94" y="268.27" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(45)" />
-    <rect x="519.61" y="189.52" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(46)" />
-    <rect x="568.78" y="189.52" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(47)" />
-    <rect x="544.19" y="189.52" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(48)" />
-    <rect x="482.53" y="251.18" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(49)" />
-    <rect x="605.44" y="251.18" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(50)" />
-    <rect x="605.44" y="226.60" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(51)" />
-    <rect x="482.53" y="275.77" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(52)" />
-    <rect x="605.44" y="275.77" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(53)" />
-    <rect x="32.11" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(54)" />
-    <rect x="56.69" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(55)" />
-    <rect x="80.86" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(56)" />
-    <rect x="254.61" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(57)" />
-    <rect x="229.61" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(58)" />
-    <rect x="204.61" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(59)" />
-    <rect x="179.61" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(60)" />
-    <rect x="155.44" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(61)" />
-    <rect x="130.44" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(62)" />
-    <rect x="105.86" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(63)" />
-    <rect x="409.18" y="253.75" width="40.06" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(64)" />
+    .interactive-map {
+        position: relative;
+        z-index: 1;
+    }
+
+    .map-rect class="map-rect"  {
+        pointer-events: all;
+        cursor: pointer;
+    }
+
+        .map-rect class="map-rect" :hover {
+            stroke: rgba(251, 214, 28, 0.5);
+            stroke-width: 2px;
+        }
+</style>
+<svg class="interactive-map" width="800" height="450" viewBox="0 0 800 450" style="outline: 3px #FBD61C solid;">
+    <image href="бутка.jpg" width="800" height="450"; style="pointer-events: none;"/>
+
+    <rect class="map-rect"  x="118.38" y="74.93" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(1)" />
+    <rect class="map-rect"  x="143.36" y="74.93" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(2)" />
+    <rect class="map-rect"  x="168.36" y="74.93" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(3)" />
+    <rect class="map-rect"  x="32.11" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(4)" />
+    <rect class="map-rect"  x="56.69" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(5)" />
+    <rect class="map-rect"  x="80.86" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(6)" />
+    <rect class="map-rect"  x="254.61" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(7)" />
+    <rect class="map-rect"  x="229.61" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(8)" />
+    <rect class="map-rect"  x="204.61" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(9)" />
+    <rect class="map-rect"  x="179.61" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(10)" />
+    <rect class="map-rect"  x="155.44" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(11)" />
+    <rect class="map-rect"  x="130.44" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(12)" />
+    <rect class="map-rect"  x="105.86" y="124.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(13)" />
+    <rect class="map-rect"  x="104.19" y="197.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(14)" />
+    <rect class="map-rect"  x="128.36" y="197.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(15)" />
+    <rect class="map-rect"  x="153.36" y="197.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(16)" />
+    <rect class="map-rect"  x="178.36" y="197.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(17)" />
+    <rect class="map-rect"  x="104.19" y="222.43" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(18)" />
+    <rect class="map-rect"  x="128.36" y="222.43" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(19)" />
+    <rect class="map-rect"  x="153.36" y="222.43" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(20)" />
+    <rect class="map-rect"  x="178.36" y="222.43" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(21)" />
+    <rect class="map-rect"  x="104.19" y="271.60" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(22)" />
+    <rect class="map-rect"  x="128.78" y="271.60" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(23)" />
+    <rect class="map-rect"  x="153.36" y="271.60" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(24)" />
+    <rect class="map-rect"  x="177.94" y="271.60" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(25)" />
+    <rect class="map-rect"  x="202.53" y="271.60" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(26)" />
+    <rect class="map-rect"  x="308.78" y="68.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(27)" />
+    <rect class="map-rect"  x="456.28" y="68.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(28)" />
+    <rect class="map-rect"  x="431.69" y="68.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(29)" />
+    <rect class="map-rect"  x="407.11" y="68.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(30)" />
+    <rect class="map-rect"  x="382.53" y="68.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(31)" />
+    <rect class="map-rect"  x="357.94" y="68.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(32)" />
+    <rect class="map-rect"  x="333.36" y="68.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(33)" />
+    <rect class="map-rect"  x="308.78" y="117.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(34)" />
+    <rect class="map-rect"  x="456.28" y="117.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(35)" />
+    <rect class="map-rect"  x="431.69" y="117.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(36)" />
+    <rect class="map-rect"  x="382.53" y="117.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(37)" />
+    <rect class="map-rect"  x="357.94" y="117.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(38)" />
+    <rect class="map-rect"  x="333.36" y="117.85" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(39)" />
+    <rect class="map-rect"  x="313.78" y="219.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(40)" />
+    <rect class="map-rect"  x="338.36" y="219.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(41)" />
+    <rect class="map-rect"  x="362.94" y="219.10" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(42)" />
+    <rect class="map-rect"  x="313.78" y="268.27" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(43)" />
+    <rect class="map-rect"  x="338.36" y="268.27" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(44)" />
+    <rect class="map-rect"  x="362.94" y="268.27" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(45)" />
+    <rect class="map-rect"  x="519.61" y="189.52" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(46)" />
+    <rect class="map-rect"  x="568.78" y="189.52" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(47)" />
+    <rect class="map-rect"  x="544.19" y="189.52" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(48)" />
+    <rect class="map-rect"  x="482.53" y="251.18" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(49)" />
+    <rect class="map-rect"  x="605.44" y="251.18" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(50)" />
+    <rect class="map-rect"  x="605.44" y="226.60" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(51)" />
+    <rect class="map-rect"  x="482.53" y="275.77" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(52)" />
+    <rect class="map-rect"  x="605.44" y="275.77" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(53)" />
+    <rect class="map-rect"  x="32.11" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(54)" />
+    <rect class="map-rect"  x="56.69" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(55)" />
+    <rect class="map-rect"  x="80.86" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(56)" />
+    <rect class="map-rect"  x="254.61" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(57)" />
+    <rect class="map-rect"  x="229.61" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(58)" />
+    <rect class="map-rect"  x="204.61" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(59)" />
+    <rect class="map-rect"  x="179.61" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(60)" />
+    <rect class="map-rect"  x="155.44" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(61)" />
+    <rect class="map-rect"  x="130.44" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(62)" />
+    <rect class="map-rect"  x="105.86" y="148.68" width="19.58" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(63)" />
+    <rect class="map-rect"  x="409.18" y="253.75" width="40.06" height="19.65" fill="transparent" stroke="transparent" rx="5" @onclick="async () => await SelectWorkStation.InvokeAsync(64)" />
 </svg>
 
 @code {

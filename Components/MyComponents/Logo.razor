@@ -1,10 +1,16 @@
-﻿<div style="@Style">
-    <img style="width: 100%; height: auto; aspect-ratio: 220/348; object-fit: contain; max-width: 100%"
-         src="favicon.png"
-         alt="Логотип" />
-</div>
+﻿<img style="@Style"
+    src="favicon.png"
+    alt="Логотип" 
+    @onclick="EventCallback"/>
+
+<style>
+    img:hover {
+        cursor: pointer
+    }
+</style>
 
 @code {
     [Parameter]
-    public string Style { get; set; } = "width: 165px; display: inline-block";
+    public string Style { get; set; } = "width: 100%; height: auto; aspect-ratio: 220/348; object-fit: contain; max-width: 100%";
+    [Parameter] public EventCallback EventCallback { get; set; }
 }

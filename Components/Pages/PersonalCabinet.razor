@@ -1,0 +1,206 @@
+﻿@page "/personalCabinet"
+@inject UserService userService
+@inject NavigationManager nav
+@inject BootcampContext context
+@rendermode InteractiveServer
+
+<PageContainer>
+    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 40px;">
+
+        <header style="display: flex; flex-direction: row; height: 65px; min-height: 65px; background: #151818; align-items: center; padding: 5px; width: 100%;">
+            <div style="height: 100%; aspect-ratio: 220/348; display: flex; align-items: flex-start; justify-content: center; width: 220px">
+                <Logo Style="height: 100%; width: 100%; object-fit: contain; padding: 3px" EventCallback="Back"></Logo>
+            </div>
+            <h3 style="margin: 0 auto; color: #FBD61C; text-align: center; flex-grow: 1;">Bootcamp</h3>
+            <div style="width: 220px">
+                <MyButton ButtonText="Выйти" OnClick="Quit"></MyButton>
+            </div>
+        </header>
+        <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; gap: 20px; width: 75%; height: 75vh; background: #151818; border-radius: 100px; padding: 15px">
+            <h5 style="color: antiquewhite">Личный кабинет</h5>
+            <div style="display: flex; flex-direction: row; width: 100%; height: 50%; padding: 15px;">
+                <div style="display: flex; flex-direction: column; justify-items: start; align-items: start; width: 50%">
+                    <h5 style="color: antiquewhite">ФИО: @userService.CurrentUser.Fullname</h5>
+                    <h5 style="color: antiquewhite">Номер телефона: @FormatPhoneNumber(userService.CurrentUser.Phone)</h5>
+                    <h5 style="color: antiquewhite">Дата рождения @userService.CurrentUser.BirthDate</h5>
+                </div>
+                <div style="display: flex; flex-direction: column; justify-items: start; align-items: end; width: 50%">
+                    <h5 style="color: antiquewhite">Бонусы: @userService.CurrentClient.Bonuses</h5>
+                    <h5 style="color: antiquewhite">Баланс: @userService.CurrentClient.Balance</h5>
+                    <MyBorders>
+                        <MyButton ButtonText="Пополнить" OnClick="BalanceReplenish"></MyButton>
+                    </MyBorders>
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-items: Center; align-items: center; gap: 20px; height: 50%">
+                <h4 style="color: antiquewhite">Ваш уровень лояльности: @currentLevel.Name @(nextLevel is null ? "(Максимальный)" : "")</h4>
+                <div style="display: flex; flex-direction: column; justify-items: start; align-items: start; gap: 20px; height: 100%; width: 75%">
+                    <h5 style="color: antiquewhite">Затраты: @spentString</h5>
+                    <h5 style="color: antiquewhite">Увеличение полученных бонусов: @currentLevel.BonusIncrease</h5>
+                    <MyBorders>
+                        <MyButton ButtonText="История трат" OnClick="SpentHistory"></MyButton>
+                    </MyBorders>
+                </div>
+            </div>
+        </div>
+    </div>
+</PageContainer>
+
+@if(isBalanceReplenishing) {
+    <ModalWindow Title="Пополнение баланса" ErrorMessage="@errorMessage">
+        <MyTextField LabelText="Сумма" @bind-Value="amountString"></MyTextField>
+        <div style="display: flex; flex-direction: row; gap: 20px; justify-items: center; align-items: end; flex: 1">
+            <MyBorders>
+                <MyButton ButtonText="Отмена" OnClick="Cancel"></MyButton>
+            </MyBorders>
+            <MyBorders>
+                <MyButton ButtonText="Пополнить" OnClick="CheckFields"></MyButton>
+            </MyBorders>
+        </div>
+    </ModalWindow>
+}
+@if(succesfullyReplenished) {
+
+}
+@if (transactionHistory)
+{
+    <ModalWindow Title="История транзакций">
+        <TransactionsHistory />
+        <MyBorders>
+            <MyButton ButtonText="Выйти" OnClick="Cancel"></MyButton>
+        </MyBorders>
+    </ModalWindow>
+}
+
+@code {
+    private string spentString = "";
+    private string errorMessage = "";
+    private bool isBalanceReplenishing = false;
+    private bool transactionHistory = false;
+    private bool succesfullyReplenished = false;
+
+    private string amountString = "";
+    private decimal amount = 0;
+
+    private LoyalityLevel currentLevel;
+    private LoyalityLevel nextLevel;
+
+    private void Back() {
+        nav.NavigateTo("/home");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (userService.CurrentUser == null) nav.NavigateTo("/");
+        currentLevel = userService.CurrentClient.LoyalityLevelNavigation;
+        nextLevel = await context.LoyalityLevels.Where(x => x.Id == currentLevel.Id + 1).FirstOrDefaultAsync();
+        spentString = await GetSpendsStringAsync();
+    }
+
+    private void Quit() {
+        userService.Logout();
+        nav.NavigateTo("/");
+    }
+
+    private void Cancel() {
+        isBalanceReplenishing = false;
+        errorMessage = "";
+        amountString = "";
+        amount = 0;
+        transactionHistory = false;
+    }
+
+    private string FormatPhoneNumber(string digits)
+    {
+        if (string.IsNullOrEmpty(digits) || digits.Length < 1)
+            return "";
+
+        try
+        {
+            return digits.Length switch
+            {
+                1 => $"+7 ({digits}",
+                <= 4 => $"+7 ({digits[1..]}",
+                <= 7 => $"+7 ({digits.Substring(1, 3)}) {digits[4..]}",
+                <= 9 => $"+7 ({digits.Substring(1, 3)}) {digits.Substring(4, 3)}-{digits[7..]}",
+                _ => $"+7 ({digits.Substring(1, 3)}) {digits.Substring(4, 3)}-{digits.Substring(7, 2)}-{digits.Substring(9)}"
+            };
+        }
+        catch
+        {
+            return $"+7{digits}";
+        }
+    }
+
+    private void BalanceReplenish() {
+        isBalanceReplenishing = true;
+        StateHasChanged();
+    }
+
+    private void CheckFields() {
+        errorMessage = "";
+        if (!decimal.TryParse(amountString, NumberStyles.Any, CultureInfo.CurrentCulture, out amount)) {
+            errorMessage = "Некорректная сумма";
+            StateHasChanged();
+            return;
+        }
+
+        var balanceReplenishment = new BalanceReplenishment() { 
+            Amount = amount,
+            IdClient = userService.CurrentClient.Id,
+            ReplenishmentType = 2
+        };
+
+        userService.CurrentClient.Balance += amount;
+        context.BalanceReplenishments.Add(balanceReplenishment);
+        context.SaveChanges();
+
+        isBalanceReplenishing = false;
+        succesfullyReplenished = true;
+        StateHasChanged();
+    }
+
+    private async Task<string> GetSpendsStringAsync()
+    {
+        try
+        {
+            using (var tempContext = new BootcampContext())
+            {
+                var clientId = userService.CurrentClient.Id;
+
+                var sessionCashPayments = await tempContext.Sessions
+                    .Where(s => s.IdClient == clientId)
+                    .SelectMany(s => s.SessionPayments)
+                    .Where(sp => sp.HoursFromMembership == null || sp.HoursFromMembership == 0)
+                    .SumAsync(sp => sp.TotalCost ?? 0);
+
+                var totalBonusesSpent = await tempContext.BonusMoves
+                    .Where(b => b.ClientId == clientId && b.Amount < 0)
+                    .SumAsync(b => (int?)b.Amount) ?? 0;
+
+                var membershipPayments = await tempContext.MembershipBuys
+                    .Where(mb => mb.IdClient == clientId)
+                    .SumAsync(mb => mb.IdMembershipNavigation.Price ?? 0);
+
+                var totalSpent = sessionCashPayments + membershipPayments - totalBonusesSpent;
+
+                if (nextLevel is not null)
+                {
+                    return $"{totalSpent}/{nextLevel.RequiredSpend}";
+                }
+                return totalSpent.ToString();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in GetSpendsStringAsync: {ex.Message}");
+            return "Ошибка загрузки";
+        }
+    }
+
+    private void SpentHistory() {
+        transactionHistory = true;
+        StateHasChanged();
+    }
+}
+

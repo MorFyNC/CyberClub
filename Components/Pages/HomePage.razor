@@ -1,29 +1,55 @@
 ﻿@page "/home"
 @inject NavigationManager nav
 @inject UserService userService
+@rendermode InteractiveServer
 
 <PageContainer>
-    <div style="display: flex; flex-direction: column; height: 100vh; width: 100%; overflow: hidden;">
-        <div style="display: flex; flex-direction: row; height: 45px; min-height: 45px; background: #151818; align-items: center;">
-            <Logo style="width: 25px; margin-left: 7px; object-fit: contain;"></Logo>
+    <div style="display: flex; flex-direction: column; height: 100%; width: 100%; overflow: hidden; z-index: -4">
+        <div style="display: flex; flex-direction: row; height: 65px; min-height: 65px; background: #151818; align-items: center; padding: 5px; outline: 1px #FBD61C solid; z-index: 10000;">
+            <div style="height: 100%; aspect-ratio: 220/348; display: flex; align-items: flex-start; justify-content: center; width: 220px">
+                <Logo Style="height: 100%; width: 100%; object-fit: contain; padding: 3px"></Logo>
+            </div>
             <h3 style="margin: 0 auto; color: #FBD61C; text-align: center; flex-grow: 1;">Bootcamp</h3>
+            <div style="width: 220px">
+                <MyButton ButtonText="Личный кабинет" OnClick="PersonalCabinet"></MyButton>
+            </div>
         </div>
 
-        <div style="flex: 1; display: flex; justify-content: center; align-items: center; width: 100%;">
-            <div style="height: 75%; width: 75%; display: flex; flex-direction: column; background: #151818; border-radius: 100px;">
-                <h1 style="color: antiquewhite; text-align: center; width: 100%; margin: 1rem 0; font-size: 1.5rem;">
-                    Домашняя страница пользователя
-                </h1>
-                <div style="flex: 1; display: flex; justify-content: center; align-items: center;">
+        <div style="display: flex; flex-direction: row; height: 100%; width: 100%;">
+            <div style="background: #151818; display: flex; flex-direction: column; width: 25%; height: 100%; align-items: center; outline: 1px #FBD61C solid; z-index: 1000">
+                <h3 style="color: antiquewhite">Текущий абонемент</h3>
+            </div>
+            <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; width: 50%; height: 100%;">
+                <h3 style="color: antiquewhite">Бронирование компьютера</h3>
+                <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; gap: 20px; z-index: 100; position: relative; z-index: 10">
+                    <InteractiveMap SelectWorkStation="SelectWorkStation"></InteractiveMap>
+                    <h5>@Selected</h5>
+                </div>
+            </div>
+            <div style="display: flex; flex-direction:column;justify-items: center; align-items: center; width: 25%; height: 100%; outline: 1px #FBD61C solid; background: #151818; z-index: 900;;">
+                <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; height: 50%; width: 100%; outline: 1px #FBD61C solid;">
+                    <h3 style="color: antiquewhite">Текущая сессия</h3>
+                </div>
+                <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; height: 50%; width: 100%; outline: 1px #FBD61C solid;">
+                    <h3 style="color: antiquewhite">Уведомления</h3>
                 </div>
             </div>
         </div>
-    </div>
+    </div>  
 </PageContainer>
 
+
 @code {
+    private int Selected = 0;
     protected override void OnInitialized()
     {
         if (userService.CurrentUser == null) nav.NavigateTo("/");
+    }
+
+    private void PersonalCabinet() {
+        nav.NavigateTo("/personalCabinet");
+    }
+    private void SelectWorkStation(int selected) {
+        Selected = selected;
     }
 }
