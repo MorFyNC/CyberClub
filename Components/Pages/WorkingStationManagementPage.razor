@@ -17,13 +17,14 @@
 <PageContainer>
     <div style="display: flex; flex-direction: column; justify-content: center; align-items:center; height: 100vh; width: 100vw">
         <h3 style="color: antiquewhite">Управление рабочими станциями</h3>
-        <div style="display: flex; height: 75%; width: 75%; align-content: center; justify-content: center;">
+        <div style="display: flex;width: 75%; align-content: center; justify-content: center;">
             <InteractiveMap SelectWorkStation="SelectArea"></InteractiveMap>
         </div>
-        <MyBorders>
-            <MyButton ButtonText="Назад" OnClick="Back"></MyButton>
-        </MyBorders>
-
+        <div style="width:33%; height: 10%; margin-top: 35px;">
+            <MyBorders>
+                <MyButton ButtonText="Назад" OnClick="Back"></MyButton>
+            </MyBorders>
+        </div>
     </div>
 
 
@@ -33,13 +34,13 @@
 @if (isWorkStationExisting == false && !isCreatingWorkStation)
 {
     <ModalWindow Title="Внимание!">
-        <p style="color: antiquewhite; align-self: center;">Рабочая станция не найдена.</p>
+        <p style="color: antiquewhite; align-self: center; font-size: 24px">Рабочая станция не найдена.</p>
 
-        <div style="display: flex; flex-direction: row; justify-items: center; align-items: center; gap: 20px;">
+        <div style="display: flex; flex-direction: row; justify-items: center; align-items: center; gap: 20px; width: 100%">
             <MyBorders>
                 <MyButton ButtonText="Добавить рабочую станцию" OnClick="CreateWorkStation" AdditionalStyles="align-self: center; "></MyButton>
             </MyBorders>
-            <MyBorders>
+            <MyBorders Padding="30">
                 <MyButton ButtonText="Закрыть" OnClick="ClearSelected" AdditionalStyles="align-self: center; "></MyButton>
             </MyBorders>
         </div>
@@ -48,7 +49,7 @@
 else if(isCreatingWorkStation && !succesfullyCreated) {
     <ModalWindow Title="Создание рабочей станции">
 
-        <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: flex; flex-direction: column; gap: 20px; width: 100%; padding: 12px">
             <div style="display: flex; flex-direction: column; gap: 20px; align-items: center;">
 
                 @if(!string.IsNullOrEmpty(errorMessage)) {
@@ -67,7 +68,7 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
                 <MyTextField Background="#151818" LabelText="Описание" style="height: 100px;" isTextArea="true" @bind-Value="description"></MyTextField>
             </div>
 
-            <div style="display: flex; flex-direction: row; justify-items: center; align-items: center; gap: 20px;">
+            <div style="display: flex; flex-direction: row; justify-items: center; align-items: center; gap: 20px; width: 100%">
                 <MyBorders>
                     <MyButton ButtonText="Отмена" OnClick="ClearSelected"></MyButton>
                 </MyBorders>
@@ -170,7 +171,7 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
                 @errorMessage
             </div>
         }
-        <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; justify-items: center; height: 40vh">
+        <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; justify-items: center; width: 100%; padding: 12px">
             <MyTextField LabelText="Пользователь" @bind-Value="userPhone" IsPhoneNumber="true" Background="#151818"></MyTextField>
 
             @if (!instantReservation)
@@ -188,7 +189,7 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
                 </LabledInputCheckbox>
             </div>
 
-            <div style="display: flex; flex-direction: row; gap:20px; justify-items: center; align-items: end; flex: 1">
+            <div style="display: flex; flex-direction: row; gap:20px; justify-items: center; align-items: end; flex: 1; width: 100%">
                 <MyBorders>
                     <MyButton ButtonText="Отмена" OnClick="ClearSelected"></MyButton>
                 </MyBorders>
@@ -201,9 +202,9 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
 }
 @if (user != null && !succesfullyPaid) {
     <ModalWindow Title="Оплата">
-        <div style="display: flex; align-items: center; justify-items: center; flex-direction: column; gap: 20px;">
+        <div style="display: flex; align-items: center; justify-items: center; flex-direction: column; gap: 20px; width: 100%">
             <h5 style="color: antiquewhite">Итоговая сумма бронирования составляет @totalPay</h5>
-            <div style="display: flex; flex-direction: row; gap: 20px; justify-items: center; align-items: end; flex: 1">
+            <div style="display: flex; flex-direction: row; gap: 20px; justify-items: center; align-items: end; flex: 1; width: 100%">
                 <MyBorders>
                     <MyButton ButtonText="Провести оплату" OnClick="SaveReservation"></MyButton>
                 </MyBorders>

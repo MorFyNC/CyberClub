@@ -6,13 +6,13 @@
 
 <PageContainer>
     <div style="display: flex; flex-direction: column; align-items: center; width: 100%; padding: 20px; box-sizing: border-box;">
-        <div style="display: flex; flex-direction: column; align-items: center; width: 220px; max-width: 400px; gap: 24px;">
+        <div style="display: flex; flex-direction: column; align-items: center; width: 600px; max-width: 600px; gap: 24px;">
             <div style="width: 10vw">
                 <Logo></Logo>
             </div>
 
             <h1 style="color: antiquewhite; text-align: center; width: 200%; margin: 0;
-                    font-size: 1.25rem; line-height: 1.4; padding: 0 10px;">
+                    font-size: 1.5rem; line-height: 1.4; padding: 0 10px;">
                 Вам необходимо заполнить некоторые данные чтобы продолжить
             </h1>
 
@@ -29,11 +29,13 @@
                 <MyTextField LabelText="ФИО" @bind-Value="fullname" />
                 <MyTextField LabelText="Пароль" @bind-Value="password" style="width: 220px;" />
                 <LabledInputDate @bind-Value="birthDate" style="width: 100%;" Label="Дата рождения" />
-
-                <MyBorders>
-                    <MyButton ButtonText="Сохранить данные"
-                    OnClick="async () => await SaveData()" />
-                </MyBorders>
+                <div style="height: 78px; width: 100%;">
+                    <MyBorders>
+                        <MyButton ButtonText="Сохранить данные"
+                                  OnClick="async () => await SaveData()" />
+                    </MyBorders>
+                </div>
+                
             </div>
         </div>
     </div>

@@ -136,7 +136,7 @@
                 @errorMessage
             </div>
         }
-        <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; justify-items: center; height: 40vh">
+        <div style="display: flex; flex-direction: column; gap: 20px; align-items: center; justify-items: center;">
             @if (!instantReservation)
             {
                 <LabledInputDate TValue="DateTime" Label="Дата начала брони" @bind-Value="reservationStartDate" Background="#151818"></LabledInputDate>
@@ -166,19 +166,19 @@
 @if (!succesfullyPaid && pay)
 {
     <ModalWindow Title="Оплата">
-        <div style="display: flex; align-items: center; justify-items: center; flex-direction: column; gap: 20px;">
-            <h5 style="color: antiquewhite">Итоговая сумма бронирования составляет @totalPay</h5>
-            <h6 style="color: antiquewhite">Ваш баланс: @userService.CurrentClient.Balance</h6>
-            <h6 style="color: antiquewhite">Ваш бонусы: @userService.CurrentClient.Bonuses</h6>
+        <div style="display: flex; align-items: center; justify-items: center; flex-direction: column; gap: 20px; width: 100%; padding: 20px">
+            <h5 style="color: antiquewhite; font-size: 24px">Итоговая сумма бронирования составляет @totalPay</h5>
+            <h6 style="color: antiquewhite; font-size: 24px">Ваш баланс: @userService.CurrentClient.Balance</h6>
+            <h6 style="color: antiquewhite; font-size: 24px">Ваш бонусы: @userService.CurrentClient.Bonuses</h6>
             @if(hasMembership) {
-                <h6 style="color: antiquewhite">Осталось часов в абонементе: @clientsMembership.HoursLeft</h6>
+                <h6 style="color: antiquewhite; font-size: 24px">Осталось часов в абонементе: @clientsMembership.HoursLeft</h6>
             }
 
             <LabledInputCheckbox Label="Потратить бонусы" @bind-Value="spendBonuses"></LabledInputCheckbox>    
             @if(hasMembership) {
                 <LabledInputCheckbox Label="Потратить часы из абонемента" @bind-Value="spendMembershipHours"></LabledInputCheckbox>
             }
-            <div style="display: flex; flex-direction: row; gap: 20px; justify-items: center; align-items: end; flex: 1">
+            <div style="display: flex; flex-direction: row; gap: 20px; justify-items: center; align-items: end; flex: 1; width: 100%">
                 <MyBorders>
                     <MyButton ButtonText="Провести оплату" OnClick="SaveReservation"></MyButton>
                 </MyBorders>

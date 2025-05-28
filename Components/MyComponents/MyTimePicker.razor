@@ -1,11 +1,11 @@
 ﻿@typeparam TValue
 
 <div class="time-input-container">
-    <label class="input-label">@Label</label>
+    <label class="input-label-time">@Label</label>
     <input type="time"
            value="@TimeString"
            @oninput="OnTimeInput"
-           class="input-field"
+           class="input-field-time"
            @attributes="AdditionalAttributes" />
 </div>
 
@@ -16,28 +16,28 @@
         margin-top: 12px;
     }
 
-    .input-label {
+    .input-label-time {
         position: absolute;
-        top: -8px;
+        top: -18px;
         left: 12px;
         background: @Background;
         padding: 0 4px;
         color: antiquewhite;
-        font-size: 12px;
+        font-size: 24px;
         font-family: Roboto;
         z-index: 2;
         pointer-events: none;
     }
 
-    .input-field {
-        height: 48px;
+    .input-field-time {
+        height: 78px;
         padding: 0 12px;
         background: transparent;
         border: 1px solid var(--Gold, #FBD61C);
         border-radius: 4px;
         color: antiquewhite;
         font-family: Roboto;
-        font-size: 14px;
+        font-size: 25px;
         width: 100%;
         box-sizing: border-box;
     }

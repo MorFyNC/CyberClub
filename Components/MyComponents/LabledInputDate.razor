@@ -1,60 +1,63 @@
 ﻿@typeparam TValue
 
 <style>
-    .labeled-input-container {
+    .labeled-input-container-date {
         position: relative;
         width: 100%;
         margin-top: 12px;
+        height: 100%;
+        min-height: 78px;
     }
 
     .custom-input-date::-webkit-calendar-picker-indicator {
         filter: invert(90%) sepia(10%) saturate(500%) hue-rotate(330deg) brightness(105%) contrast(95%);
     }
 
-    .input-label {
+    .input-label-date {
         position: absolute;
-        top: -8px;
+        top: -18px;
         left: 12px;
         background: @Background;
         padding: 0 4px;
         color: antiquewhite;
-        font-size: 12px;
+        font-size: 24px;
         font-family: Roboto;
         z-index: 2;
         pointer-events: none;
     }
 
-    .input-field {
+    .input-field-date {
         width: 100%;
-        height: 48px;
+        height: 100%;
+        min-height: 78px;
         padding: 0 12px;
         background: transparent;
         border: 1px solid var(--Gold, #FBD61C);
         border-radius: 4px;
         color: antiquewhite;
         font-family: Roboto;
-        font-size: 14px;
+        font-size: 25px;
     }
 
-        .input-field:focus {
+        .input-field-date:focus {
             outline: none;
             box-shadow: 0 0 0 2px #FBD61C;
         }
 </style>
 
-<div class="labeled-input-container">
-    <label class="input-label">@Label</label>
+<div class="labeled-input-container-date">
+    <label class="input-label-date">@Label</label>
     @if (IsDateOnly)
     {
         <InputDate @bind-Value="CurrentDateTimeValue"
-                   class="input-field"
+                   class="input-field-date"
                    @attributes="AdditionalAttributes"
                    @oninput="HandleInput" />
     }
     else
     {
         <InputDate @bind-Value="CurrentDateTimeValue"
-                   class="input-field"
+                   class="input-field-date"
                    @attributes="AdditionalAttributes"
                    @oninput="HandleInput" />
     }
