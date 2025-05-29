@@ -1,0 +1,12 @@
+﻿@page "/payment-success"
+@inject NavigationManager nav
+
+<h3 style="color: green">Оплата прошла успешно!</h3>
+<MyButton ButtonText="Вернуться в личный кабинет" OnClick="@GoBack" />
+
+@code {
+    private void GoBack()
+    {
+        nav.NavigateTo("/personalCabinet", forceLoad: true);
+    }
+}

@@ -16,6 +16,15 @@ namespace CyberClub.Classes
             IsAdmin = false;
         }
 
+        public async Task UpdateValues()
+        {
+            if (CurrentUser == null) return;
+            BootcampContext tempContext = new BootcampContext();
+            CurrentClient = tempContext.Clients
+                .Include(x => x.LoyalityLevelNavigation)
+                .FirstOrDefault(x => x.Id == CurrentClient.Id);
+            CurrentUser = tempContext.Users.FirstOrDefault(x => x.Id == CurrentUser.Id);
+        }
         public async Task CheckLevel(Client client)
         {
             BootcampContext tempContext = new BootcampContext();

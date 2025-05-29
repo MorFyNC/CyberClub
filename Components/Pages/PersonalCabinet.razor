@@ -1,4 +1,6 @@
 ﻿@page "/personalCabinet"
+@inject HttpClient Http
+
 @inject UserService userService
 @inject NavigationManager nav
 @inject BootcampContext context
@@ -29,10 +31,10 @@
                         <h5 style="color: antiquewhite">Баланс: @userService.CurrentClient.Balance</h5>
                         <div style="height: 25%; width: 45%">
                             <MyBorders>
-                                <MyButton ButtonText="Пополнить" OnClick="BalanceReplenish"></MyButton>
+                                <MyButton ButtonText="Пополнить" OnClick="() => isBalanceReplenishing = true"></MyButton>
                             </MyBorders>
                         </div>
-                        
+
                     </div>
                 </div>
                 <div style="display: flex; flex-direction: column; justify-items: Center; align-items: center; gap: 20px; height: 50%">
@@ -50,21 +52,20 @@
     </PageContainer>
 
     @if(isBalanceReplenishing) {
-        <ModalWindow Title="Пополнение баланса" ErrorMessage="@errorMessage">
-            <MyTextField Background="#151818" LabelText="Сумма" @bind-Value="amountString"></MyTextField>
-            <div style="display: flex; flex-direction: row; gap: 20px; justify-items: center; align-items: end; flex: 1; width: 100%">
+        <ModalWindow Title="Пополнение баланса">
+            <MyTextField LabelText="Сумма пополнения" @bind-Value="amountString" Background="#151818"></MyTextField>
+            
+            <div style="width:100%; display: flex; flex-direction: row; gap: 20px;">
                 <MyBorders>
-                    <MyButton ButtonText="Отмена" OnClick="Cancel"></MyButton>
+                    <MyButton OnClick="PayWithYooKassa" ButtonText="Пополнить"></MyButton>
                 </MyBorders>
                 <MyBorders>
-                    <MyButton ButtonText="Пополнить" OnClick="CheckFields"></MyButton>
+                    <MyButton OnClick="Cancel" ButtonText="Отмена"></MyButton>
                 </MyBorders>
             </div>
         </ModalWindow>
     }
-    @if(succesfullyReplenished) {
 
-    }
     @if (transactionHistory)
     {
         <ModalWindow Title="История транзакций">
@@ -83,7 +84,7 @@
     private bool transactionHistory = false;
     private bool succesfullyReplenished = false;
 
-    private string amountString = "";
+    private string amountString = "100";
     private decimal amount = 0;
 
     private LoyalityLevel currentLevel;
@@ -96,10 +97,13 @@
     protected override async Task OnInitializedAsync()
     {
         if (userService.CurrentUser == null) nav.NavigateTo("/");
+        await userService.UpdateValues();
         currentLevel = userService.CurrentClient.LoyalityLevelNavigation;
-        nextLevel = await context.LoyalityLevels.Where(x => x.Id == currentLevel.Id + 1).FirstOrDefaultAsync();
+        var next = await context.LoyalityLevels.Where(x => x.Id == currentLevel.Id + 1).FirstOrDefaultAsync();
+        nextLevel = next;
         spentString = await GetSpendsStringAsync();
     }
+
 
     private void Quit() {
         userService.Logout();
@@ -162,6 +166,40 @@
         isBalanceReplenishing = false;
         succesfullyReplenished = true;
         StateHasChanged();
+    }
+    private async Task PayWithYooKassa()
+    {
+        if (!decimal.TryParse(amountString, out var amount) || amount <= 0)
+        {
+            errorMessage = "Некорректная сумма";
+            return;
+        }
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("https://localhost:7236/api/payments/create", amount);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<PaymentResponse>();
+                if (result?.url is not null)
+                {
+                    nav.NavigateTo(result.url, forceLoad: true);
+                }
+            }
+            else
+            {
+                errorMessage = "Ошибка при создании платежа";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Ошибка: " + ex.Message;
+        }
+    }
+
+    private class PaymentResponse
+    {
+        public string url { get; set; }
     }
 
     private async Task<string> GetSpendsStringAsync()
