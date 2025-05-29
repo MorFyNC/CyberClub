@@ -28,7 +28,7 @@ namespace CyberClub.Controllers
         {
             int clientId = _userService.CurrentClient.Id; 
 
-            var returnUrl = "https://plainly-key-smelt.cloudpub.ru/personalCabinet";
+            var returnUrl = "https://localhost:7236/personalCabinet";
             var confirmationUrl = await _yooKassaService.CreatePaymentAsync(amount, clientId, returnUrl);
 
             return Ok(new { url = confirmationUrl });
