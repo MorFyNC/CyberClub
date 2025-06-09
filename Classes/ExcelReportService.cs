@@ -13,7 +13,7 @@
         {
             _context = context;
         }
-
+        // Генерация отчета
         public async Task<byte[]> GenerateFinancialReport(DateTime? startDate, DateTime? endDate)
         {
             var sessionPayments = await _context.SessionPayments

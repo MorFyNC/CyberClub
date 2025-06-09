@@ -11,13 +11,16 @@ public class SessionBackgroundService : BackgroundService
         _services = services;
         _logger = logger;
     }
-
+    // Обновление бронирований каждую минуту
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
             using (var scope = _services.CreateScope())
             {
+                try
+                {
+
                 var dbContext = scope.ServiceProvider.GetRequiredService<BootcampContext>();
 
                 var now = DateTime.Now;
@@ -106,6 +109,11 @@ public class SessionBackgroundService : BackgroundService
                 }
 
                 
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
             }
 
             await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);

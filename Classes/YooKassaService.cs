@@ -13,7 +13,7 @@ public class YooKassaService
         _httpClient = httpClient;
         _configuration = configuration;
     }
-
+    // Создание оплаты
     public async Task<string> CreatePaymentAsync(decimal amount, int clientId, string returnUrl)
     {
         var shopId = _configuration["YooKassa:ShopId"];

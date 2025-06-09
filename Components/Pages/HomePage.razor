@@ -166,6 +166,15 @@
 @if (!succesfullyPaid && pay)
 {
     <ModalWindow Title="Оплата">
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div style="color: #ff6b6b;
+                             background: rgba(255, 107, 107, 0.1);
+                             padding: 10px 15px; border-radius: 4px; width: 100%;
+                             text-align: center; font-size: 0.9rem;">
+                @errorMessage
+            </div>
+        }
         <div style="display: flex; align-items: center; justify-items: center; flex-direction: column; gap: 20px; width: 100%; padding: 20px">
             <h5 style="color: antiquewhite; font-size: 24px">Итоговая сумма бронирования составляет @totalPay</h5>
             <h6 style="color: antiquewhite; font-size: 24px">Ваш баланс: @userService.CurrentClient.Balance</h6>
@@ -185,7 +194,7 @@
                 <MyBorders>
                     <MyButton ButtonText="Отмена" OnClick="Cancel"></MyButton>
                 </MyBorders>
-            </div>
+            </div>  
         </div>
     </ModalWindow>
 }
@@ -258,26 +267,32 @@
         await LoadCurrentSession();
         notificationTimer = new Timer(CheckUpcomingReservations, null, 0, 60000);
     }
-
+    // Проверка 
     private async void CheckUpcomingReservations(object state)
     {
         using(BootcampContext context = new BootcampContext()) {
-            var now = DateTime.Now;
-            var notificationTime = now.AddMinutes(notificationMinutesBefore);
+            try{
 
-            upcomingReservation = await context.Reservations
-                .Include(r => r.IdSessionNavigation)
-                .ThenInclude(s => s.IdWorkStationNavigation)
-                .Where(r => r.IdSessionNavigation.IdClient == userService.CurrentClient.Id &&
-                           r.ReservationStatus == ReservationStatus.NotConfirmed && 
-                           r.IdSessionNavigation.StartTime > now &&
-                           r.IdSessionNavigation.StartTime <= notificationTime)
-                .FirstOrDefaultAsync();
+                var now = DateTime.Now;
+                var notificationTime = now.AddMinutes(notificationMinutesBefore);
 
-            if (upcomingReservation != null)
-            {
-                showNotification = true;
-                await InvokeAsync(StateHasChanged);
+                upcomingReservation = await context.Reservations
+                    .Include(r => r.IdSessionNavigation)
+                    .ThenInclude(s => s.IdWorkStationNavigation)
+                    .Where(r => r.IdSessionNavigation.IdClient == userService.CurrentClient.Id &&
+                               r.ReservationStatus == ReservationStatus.NotConfirmed && 
+                               r.IdSessionNavigation.StartTime > now &&
+                               r.IdSessionNavigation.StartTime <= notificationTime)
+                    .FirstOrDefaultAsync();
+
+                if (upcomingReservation != null)
+                {
+                    showNotification = true;
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+            catch(Exception ex) {
+                Console.WriteLine(ex.Message);
             }
         }
 
@@ -286,7 +301,6 @@
     {
         try
         {
-            // Загружаем активный абонемент клиента
             clientsMembership = await context.ClientsMemberships
                 .Include(cm => cm.IdMembershipBuyNavigation)
                 .ThenInclude(mb => mb.IdMembershipNavigation)
@@ -300,7 +314,6 @@
                 activeMembership = clientsMembership.IdMembershipBuyNavigation.IdMembershipNavigation;
             }
 
-            // Загружаем все доступные абонементы
             availableMemberships = await context.Memberships
                 .OrderBy(m => m.Price)
                 .ToListAsync();
@@ -569,7 +582,7 @@
         using var transaction = await context.Database.BeginTransactionAsync();
         try
         {
-            var client = userService.CurrentClient;
+            var client = context.Clients.First(x => x.Id == userService.CurrentClient.Id);
             Session session = new Session()
                 {
                     IdClient = client.Id,
@@ -637,7 +650,7 @@
                         ClientId = client.Id
                     };
             }
-
+            if (sumToPay > client.Balance) throw new Exception("Недостаточно средств");
             client.Balance -= sumToPay;
             context.BonusMoves.Add(bonusMove);
             await context.SaveChangesAsync();

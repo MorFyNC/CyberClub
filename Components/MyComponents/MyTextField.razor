@@ -71,6 +71,19 @@
                 placeholder="+7 (___) ___-__-__"
                 style="width: 100%; background: transparent; border: none; color: antiquewhite;" />
             }
+            else if (IsPassword)
+            {
+                <input @bind="CurrentValue"
+                       @bind:event="oninput"
+                       type="@(isPasswordVisible ? "text" : "password")"
+                       placeholder="@Placeholder"
+                       style="width: 100%; background: transparent; border: none; color: antiquewhite;" />
+                <button type="button"
+                        @onclick="TogglePasswordVisibility"
+                        style="position: absolute; right: 8px; background: none; border: none; color: antiquewhite; cursor: pointer;">
+                    @(isPasswordVisible ? "🔓" : "🔒")
+                </button>
+            }
             else if(!isTextArea)
             {
                 <input @bind="CurrentValue"
@@ -91,7 +104,8 @@
 @code {
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object> AdditionalAttributes { get; set; } = new();
-
+    private bool isPasswordVisible = false;
+    [Parameter] public bool IsPassword { get; set; }    
     [Parameter] public bool isTextArea { get; set; } = false;
     [Parameter] public string LabelText { get; set; } = "Текст";
     [Parameter] public bool IsPhoneNumber { get; set; } = false;
@@ -116,5 +130,10 @@
     private void HandleTextareaInput(ChangeEventArgs e)
     {
         CurrentValue = e.Value?.ToString() ?? "";
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        isPasswordVisible = !isPasswordVisible;
     }
 }

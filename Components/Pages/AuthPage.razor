@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using System.Text
 @rendermode InteractiveServer
 @inject BootcampContext _context
 @inject NavigationManager nav
@@ -32,16 +33,16 @@
 
             @if (creatingPassword || showPasswordField)
             {
-                <MyTextField LabelText="Пароль" @bind-Value="password" style="width: 100%"></MyTextField>
+                <MyTextField LabelText="Пароль" @bind-Value="password" style="width: 100%" IsPassword="true"></MyTextField>
             }
             <div style="width: 100%; height: 78px">
                 <MyBorders Width="600">
                     <MyButton ButtonText="Авторизоваться"
-                              OnClick="async () => await Auth()"
-                              Width="600" />
+                    OnClick="async () => await Auth()"
+                    Width="600" />
                 </MyBorders>
             </div>
-            
+
         </div>
     </div>
 </PageContainer>
@@ -93,22 +94,37 @@
         nav.NavigateTo("/AccountData");
     }
 
-    private async void Login(User user) {
-        if (string.IsNullOrEmpty(user.Password)) {
+    private async void Login(User user)
+    {
+        if (string.IsNullOrEmpty(user.Password))
+        {
             await CreatePasswordLogin(user);
+            return;
         }
-        if (user.Password == password)
+
+        var hashedInput = HashPassword(password);
+        if (user.Password == hashedInput)
         {
             errorMessage = "";
-            if(user.Role == "Admin") {
+
+            if (user.Role == "Admin")
+            {
                 LoginAsAdmin(user);
                 return;
             }
+
             userService.CurrentUser = user;
-            userService.CurrentClient = await _context.Clients.Where(x => x.IdUser == user.Id).Include(l => l.LoyalityLevelNavigation).FirstOrDefaultAsync();
+            userService.CurrentClient = await _context.Clients
+                .Where(x => x.IdUser == user.Id)
+                .Include(l => l.LoyalityLevelNavigation)
+                .FirstOrDefaultAsync();
+
             nav.NavigateTo("/home");
         }
-        else errorMessage = "Введен неправильный пароль";
+        else
+        {
+            errorMessage = "Введен неправильный пароль";
+        }
     }
 
     private void LoginAsAdmin(User user) {
@@ -122,7 +138,15 @@
             errorMessage = "Пароль слишком короткий. Минимум 6 символов!";
             return;
         }
-        user.Password = password;
+        user.Password = HashPassword(password);
         await _context.SaveChangesAsync();
+    }
+
+    private string HashPassword(string password)
+    {
+        using var sha256 = System.Security.Cryptography.SHA256.Create();
+        var bytes = Encoding.UTF8.GetBytes(password);
+        var hashBytes = sha256.ComputeHash(bytes);
+        return Convert.ToBase64String(hashBytes);
     }
 }
