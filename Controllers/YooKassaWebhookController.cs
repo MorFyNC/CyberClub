@@ -7,6 +7,7 @@ using System.Text.Json;
 
 namespace CyberClub.Controllers
 {
+    // Контроллер, на который ЮКасса отправляет запросы со статусом платежей
     [ApiController]
     [Route("api/payments")]
     public class PaymentsController : ControllerBase

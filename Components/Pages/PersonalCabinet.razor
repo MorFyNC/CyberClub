@@ -5,6 +5,9 @@
 @inject NavigationManager nav
 @inject BootcampContext context
 @rendermode InteractiveServer
+
+@* Персональный кабинет пользователя *@
+
 @if(userService.CurrentUser != null) {
     <PageContainer>
         <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 40px;">

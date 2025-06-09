@@ -2,12 +2,11 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-
+// Сервис для работы с ЮКассой
 public class YooKassaService
 {
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
-    private readonly UserService _userService;
     public YooKassaService(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;

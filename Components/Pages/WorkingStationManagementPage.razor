@@ -4,6 +4,8 @@
 @inject NavigationManager nav
 @inject UserService userService
 
+@* Страница рабочих станций (админ) *@
+
 <head>
     <link href="styles.css" rel="stylesheet" />
 </head>
@@ -86,7 +88,6 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
         </MyBorders>
     </ModalWindow>
 }
-
 @if(isWorkStationExisting == true && isUpdating != true) {
     <ModalWindow Title="Выберите действие">
 

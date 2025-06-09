@@ -3,6 +3,9 @@
 @inject UserService userService
 @inject BootcampContext context
 @rendermode InteractiveServer
+@implements IDisposable
+
+@*Домашняя страница пользователя*@
 
 <PageContainer>
     <div style="display: flex; flex-direction: column; height: 100%; width: 100%; overflow: hidden; z-index: -4">
@@ -46,7 +49,7 @@
                     }
                 </div>
             </div>
-            <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; width: 50%; height: 100%;">
+            <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; height: 100%;">
                 <h3 style="color: antiquewhite">Бронирование компьютера</h3>
                 <div style="display: flex; flex-direction: column; justify-items: center; align-items: center; gap: 20px; z-index: 100; position: relative; z-index: 10">
                     <InteractiveMap SelectWorkStation="SelectWorkStation"></InteractiveMap>
@@ -213,7 +216,6 @@
         </MyBorders>
     </ModalWindow>
 }
-@implements IDisposable
 @code {
     private bool isBooking = false;
     private WorkStation Selected = null;
@@ -255,9 +257,6 @@
     {
         if (userService.CurrentUser == null) nav.NavigateTo("/");
     }
-
-
-
     protected override async Task OnInitializedAsync()
     {
         if (userService.CurrentUser == null) nav.NavigateTo("/");
@@ -267,9 +266,10 @@
         await LoadCurrentSession();
         notificationTimer = new Timer(CheckUpcomingReservations, null, 0, 60000);
     }
-    // Проверка 
+    // Проверка предстоящих бронирований
     private async void CheckUpcomingReservations(object state)
     {
+        if (userService.CurrentClient == null) return;
         using(BootcampContext context = new BootcampContext()) {
             try{
 
@@ -443,11 +443,7 @@
         }
     }
 
-    public void Dispose()
-    {
-        sessionTimer?.Dispose();
-        notificationTimer?.Dispose();
-    }
+
     private async Task LoadCurrentSession()
     {
         currentSession = await context.Sessions
@@ -466,7 +462,11 @@
             StartTimer();
         }
     }
-
+    public void Dispose()
+    {
+        sessionTimer?.Dispose();
+        notificationTimer?.Dispose();
+    }
     private void StartTimer()
     {
         sessionTimer = new Timer(async (state) =>

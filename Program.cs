@@ -18,8 +18,6 @@ builder.Services.AddHostedService<SessionBackgroundService>();
 builder.Services.AddSingleton<UserService>();
 builder.Services.AddScoped<ExcelReportService>();
 builder.Services.AddHttpClient();
-builder.Services.Configure<YooKassaSettings>(
-    builder.Configuration.GetSection("YooKassa"));
 builder.Services.AddScoped<YooKassaService>();
 builder.Services.AddControllers();
 
