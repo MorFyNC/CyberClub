@@ -25,6 +25,10 @@
                 <MyButton ButtonText="Финансовый отчет" OnClick="FinanceReport"></MyButton>
             </MyBorders>
             <MyBorders>
+                <MyButton ButtonText="Статистика использования" OnClick="WorkstationUsageReport"></MyButton>
+            </MyBorders>
+
+            <MyBorders>
                 <MyButton ButtonText="Выход" OnClick="Logout"></MyButton>
             </MyBorders>
         </div>
@@ -77,6 +81,27 @@ else if (succesfullyReplenished) {
 
     </ModalWindow>
 }
+@if (generatingUsageStats)
+{
+    <ModalWindow Title="Статистика использования рабочих станций">
+        <LabledInputDate @bind-Value="usageStartDate" TValue="DateTime?" Background="#151818" Label="Начиная"></LabledInputDate>
+        <LabledInputDate @bind-Value="usageEndDate" TValue="DateTime?" Background="#151818" Label="Заканчивая"></LabledInputDate>
+
+        <div style="display: flex; flex-direction: row; align-items: center; justify-items: center; gap: 20px; width: 100%">
+            <div style="width: 50%;">
+                <MyBorders Padding="12">
+                    <MyButton ButtonText="Сгенерировать отчет" OnClick="async () => await GenerateWorkstationUsageReport()"></MyButton>
+                </MyBorders>
+            </div>
+            <div style="width: 50%;">
+                <MyBorders Padding="12">
+                    <MyButton ButtonText="Отмена" OnClick="Cancel"></MyButton>
+                </MyBorders>
+            </div>
+        </div>
+    </ModalWindow>
+}
+
 @code {
     private bool balanceReplenish = false;
 
@@ -149,7 +174,8 @@ else if (succesfullyReplenished) {
         StateHasChanged();
     }
 
-    private void Cancel() {
+    private void Cancel()
+    {
         phoneNumber = "";
         amount = "";
         balanceReplenish = false;
@@ -162,8 +188,12 @@ else if (succesfullyReplenished) {
         generatingReport = false;
         reportStartDate = null;
         reportEndDate = null;
+        generatingUsageStats = false;
+        usageStartDate = null;
+        usageEndDate = null;
         StateHasChanged();
     }
+
 
     private async void FindUser(string phone) {
         errorMessage = "";
@@ -223,4 +253,39 @@ else if (succesfullyReplenished) {
             isGenerating = false;
         }
     }
+
+    private bool generatingUsageStats = false;
+    private DateTime? usageStartDate;
+    private DateTime? usageEndDate;
+
+    private void WorkstationUsageReport()
+    {
+        generatingUsageStats = true;
+        StateHasChanged();
+    }
+
+    private async Task GenerateWorkstationUsageReport()
+    {
+        if (isGenerating) return;
+
+        isGenerating = true;
+        try
+        {
+            var fileContent = await excelReportService.GenerateWorkstationUsageReport(usageStartDate, usageEndDate);
+            var fileName = $"WorkstationUsageReport_{usageStartDate:yyyyMMdd}_{usageEndDate:yyyyMMdd}.xlsx";
+            var base64Content = Convert.ToBase64String(fileContent);
+            var url = $"data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{base64Content}";
+
+            nav.NavigateTo(url, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка генерации отчета использования: {ex.Message}");
+        }
+        finally
+        {
+            isGenerating = false;
+        }
+    }
+
 }

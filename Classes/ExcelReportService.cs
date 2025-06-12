@@ -13,7 +13,95 @@
         {
             _context = context;
         }
-        // Генерация отчета
+
+        // Генерация статистики
+
+        public async Task<byte[]> GenerateWorkstationUsageReport(DateTime? startDate, DateTime? endDate)
+        {
+            var sessions = await _context.Sessions
+                .Include(s => s.IdWorkStationNavigation)
+                .ThenInclude(w => w.WorkStationTypeNavigation)
+                .Where(s =>
+                    (startDate == null || s.StartTime >= startDate) &&
+                    (endDate == null || s.StartTime <= endDate))
+                .ToListAsync();
+
+            var stats = sessions
+                .GroupBy(s => new
+                {
+                    s.IdWorkStation,
+                    StationType = s.IdWorkStationNavigation.WorkStationTypeNavigation.Name
+                })
+                .Select(g => new
+                {
+                    g.Key.IdWorkStation,
+                    g.Key.StationType,
+                    SessionCount = g.Count(),
+                    TotalHours = g.Sum(s => s.HoursCount ?? 0)
+                })
+                .ToList();
+
+            var totalSessions = stats.Sum(s => s.SessionCount);
+            var totalHours = stats.Sum(s => s.TotalHours);
+
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Статистика станций");
+
+            worksheet.Cell("A1").Value = "Отчет по использованию рабочих станций";
+            worksheet.Range("A1:D1").Merge().Style.Font.Bold = true;
+
+            if (startDate == null && endDate == null)
+            {
+                worksheet.Cell("A2").Value = "Период: за все время";
+            }
+            else if (startDate == null)
+            {
+                worksheet.Cell("A2").Value = $"Период: по {endDate:dd.MM.yyyy}";
+            }
+            else if (endDate == null)
+            {
+                worksheet.Cell("A2").Value = $"Период: с {startDate:dd.MM.yyyy}";
+            }
+            else
+            {
+                worksheet.Cell("A2").Value = $"Период: {startDate:dd.MM.yyyy}-{endDate:dd.MM.yyyy}";
+            }
+            worksheet.Range("A2:D2").Merge();
+
+            var row = 4;
+            worksheet.Cell(row, 1).Value = "ID станции";
+            worksheet.Cell(row, 2).Value = "Тип станции";
+            worksheet.Cell(row, 3).Value = "Кол-во сессий";
+            worksheet.Cell(row, 4).Value = "Суммарное время (часы)";
+            row++;
+
+            foreach (var stat in stats)
+            {
+                worksheet.Cell(row, 1).Value = stat.IdWorkStation;
+                worksheet.Cell(row, 2).Value = stat.StationType;
+                worksheet.Cell(row, 3).Value = stat.SessionCount;
+                worksheet.Cell(row, 4).Value = stat.TotalHours;
+                row++;
+            }
+
+            // Итоговая строка
+            worksheet.Cell(row, 2).Value = "Итого:";
+            worksheet.Cell(row, 3).Value = totalSessions;
+            worksheet.Cell(row, 4).Value = totalHours;
+
+            worksheet.Range(row, 2, row, 4).Style.Font.Bold = true;
+            worksheet.Range(row, 2, row, 4).Style.Fill.BackgroundColor = XLColor.LightGray;
+
+            worksheet.Columns().AdjustToContents();
+            worksheet.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            return stream.ToArray();
+        }
+
+
+        // Генерация финансового отчета
         public async Task<byte[]> GenerateFinancialReport(DateTime? startDate, DateTime? endDate)
         {
             var sessionPayments = await _context.SessionPayments
@@ -143,7 +231,7 @@
             worksheet.Cell(sessionsRow + 2, 2).Value = totalIncome;
             worksheet.Cell(sessionsRow + 2, 2).Style.Font.Bold = true;
             worksheet.Cell(sessionsRow + 2, 2).Style.Fill.BackgroundColor = XLColor.LightGreen;
-            
+
             var workstationUsages = await _context.Sessions
                 .Include(s => s.IdWorkStationNavigation)
                 .ThenInclude(x => x.WorkStationTypeNavigation)
@@ -183,7 +271,6 @@
                 worksheet.Cell(sessionsRow, 4).Value = stat.TotalHours;
                 sessionsRow++;
             }
-
 
             worksheet.Columns().AdjustToContents();
             worksheet.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
