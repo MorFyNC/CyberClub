@@ -37,7 +37,7 @@
         <MyTextField Background="#151818" IsPhoneNumber="true" LabelText="Номер телефона пользователя" ValueChanged="FindUser"></MyTextField>
         <label style="color: antiquewhite">@foundUser</label>
         <MyTextField Background="#151818" LabelText="Сумма пополнения" ValueChanged="ConvertValue"></MyTextField>
-
+        <LabledInputCheckbox Label="Наличные" @bind-Value="isCashType"></LabledInputCheckbox>
         <div style="display: flex; flex-direction: row; align-items: start; justify-items: end; gap: 20px; width: 100%">
             <MyBorders>
                 <MyButton ButtonText="Отмена" OnClick="Cancel"></MyButton>
@@ -72,7 +72,7 @@ else if (succesfullyReplenished) {
                     <MyButton ButtonText="Отмена" OnClick="Cancel"></MyButton>
                 </MyBorders>
             </div>
-            
+
         </div>
 
     </ModalWindow>
@@ -89,6 +89,7 @@ else if (succesfullyReplenished) {
     private string errorMessage = "";
     private bool succesfullyReplenished = false;
     private User? found = null;
+    private bool isCashType = false;
 
     private bool generatingReport = false;
     private DateTime? reportStartDate;
@@ -137,7 +138,11 @@ else if (succesfullyReplenished) {
             .FirstOrDefaultAsync();
         var client = user.Clients.FirstOrDefault();
         client.Balance += amountDecimal;
-        BalanceReplenishment balanceReplenishment = new BalanceReplenishment() { Amount = amountDecimal, IdClient = client.Id, ReplenishmentType = ReplenishmentType.Cash };
+        BalanceReplenishment balanceReplenishment = new BalanceReplenishment() { 
+            Amount = amountDecimal,
+            IdClient = client.Id,
+            ReplenishmentType = isCashType ? ReplenishmentType.Cash : ReplenishmentType.Online
+        };
         context.BalanceReplenishments.Add(balanceReplenishment);
         await context.SaveChangesAsync();
         succesfullyReplenished = true;

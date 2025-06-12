@@ -143,6 +143,47 @@
             worksheet.Cell(sessionsRow + 2, 2).Value = totalIncome;
             worksheet.Cell(sessionsRow + 2, 2).Style.Font.Bold = true;
             worksheet.Cell(sessionsRow + 2, 2).Style.Fill.BackgroundColor = XLColor.LightGreen;
+            
+            var workstationUsages = await _context.Sessions
+                .Include(s => s.IdWorkStationNavigation)
+                .ThenInclude(x => x.WorkStationTypeNavigation)
+                .Where(s =>
+                    (startDate == null || s.StartTime >= startDate) &&
+                    (endDate == null || s.StartTime <= endDate))
+                .ToListAsync();
+
+            sessionsRow += 4;
+
+            worksheet.Cell(sessionsRow, 1).Value = "Использование рабочих станций";
+            worksheet.Range(sessionsRow, 1, sessionsRow, 4).Merge().Style.Font.Bold = true;
+            sessionsRow++;
+
+            worksheet.Cell(sessionsRow, 1).Value = "ID станции";
+            worksheet.Cell(sessionsRow, 2).Value = "Тип станции";
+            worksheet.Cell(sessionsRow, 3).Value = "Количество сессий";
+            worksheet.Cell(sessionsRow, 4).Value = "Суммарное время (часы)";
+            sessionsRow++;
+
+            var workstationStats = workstationUsages
+                .GroupBy(s => new { s.IdWorkStation, s.IdWorkStationNavigation.WorkStationTypeNavigation.Name })
+                .Select(g => new
+                {
+                    WorkstationId = g.Key.IdWorkStation,
+                    WorkstationName = g.Key.Name,
+                    SessionCount = g.Count(),
+                    TotalHours = g.Sum(s => s.HoursCount ?? 0)
+                })
+                .ToList();
+
+            foreach (var stat in workstationStats)
+            {
+                worksheet.Cell(sessionsRow, 1).Value = stat.WorkstationId;
+                worksheet.Cell(sessionsRow, 2).Value = stat.WorkstationName;
+                worksheet.Cell(sessionsRow, 3).Value = stat.SessionCount;
+                worksheet.Cell(sessionsRow, 4).Value = stat.TotalHours;
+                sessionsRow++;
+            }
+
 
             worksheet.Columns().AdjustToContents();
             worksheet.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
