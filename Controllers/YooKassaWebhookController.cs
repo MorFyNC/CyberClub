@@ -1,5 +1,6 @@
 ﻿using CyberClub.Classes;
 using CyberClub.Database;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -67,17 +68,16 @@ namespace CyberClub.Controllers
 
             return Content("<h2>Платеж успешно выполнен. Баланс пополнен.</h2>", "text/html");
         }
+
         [HttpPost("webhook")]
-        public async Task<IActionResult> PaymentWebhook()
+        [IgnoreAntiforgeryToken]
+        [Consumes("application/json")]
+        public async Task<IActionResult> PaymentWebhook([FromBody] JsonElement root)
         {
-            using var reader = new StreamReader(Request.Body);
-            var body = await reader.ReadToEndAsync();
+            Console.WriteLine("\n\n\n\n\nWEBHOOK\n\n\n\n\n");
 
             try
             {
-                using var doc = JsonDocument.Parse(body);
-                var root = doc.RootElement;
-
                 var eventType = root.GetProperty("event").GetString();
                 if (eventType != "payment.succeeded")
                     return Ok();
@@ -93,7 +93,7 @@ namespace CyberClub.Controllers
                     if (_processedPaymentIds.Contains(paymentId))
                     {
                         Console.WriteLine($"⚠️ Платёж {paymentId} уже был обработан.");
-                        return Ok(); 
+                        return Ok();
                     }
 
                     _processedPaymentIds.Add(paymentId);
@@ -108,6 +108,7 @@ namespace CyberClub.Controllers
                 {
                     return BadRequest("Invalid amount value");
                 }
+
                 var description = payment.GetProperty("description").GetString() ?? "";
                 var clientIdStr = description.Split('#').LastOrDefault();
 
@@ -139,6 +140,7 @@ namespace CyberClub.Controllers
                 return StatusCode(500);
             }
         }
+
 
 
 

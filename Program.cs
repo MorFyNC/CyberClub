@@ -34,8 +34,12 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
+app.UseRouting();
 app.UseAntiforgery();
-
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers(); // обязательно
+});
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.Use(async (context, next) =>
@@ -43,8 +47,5 @@ app.Use(async (context, next) =>
     Console.WriteLine($"➡️ Запрос: {context.Request.Method} {context.Request.Path}");
     await next.Invoke();
 });
-
-
-app.MapControllers();
 
 app.Run();
