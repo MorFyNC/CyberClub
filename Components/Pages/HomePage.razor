@@ -523,6 +523,12 @@
         errorMessage = "";
         var userPhone = userService.CurrentUser.Phone;
 
+        if(Selected.IsBlocked.Value) {
+            errorMessage = "Рабочая станция заблокирована";
+            StateHasChanged();
+            return;
+        }
+
         if (!instantReservation && (reservationStartDate.Day < DateTime.Now.Day && reservationStartTime < TimeOnly.FromDateTime(DateTime.Now)))
         {
             errorMessage = "Некорректная дата/время";
@@ -541,7 +547,7 @@
             new DateTime(reservationStartDate.Year, reservationStartDate.Month, reservationStartDate.Day, reservationStartTime.Hour, reservationStartTime.Minute, reservationStartTime.Second),
             hoursCountInt))
         {
-            errorMessage = "В указаное время рабочая станция будет занята";
+            errorMessage = "В указаное время рабочая станция будет недоступна";
             StateHasChanged();
             return;
         }
@@ -582,13 +588,30 @@
         using var transaction = await context.Database.BeginTransactionAsync();
         try
         {
+            DateTime startDateTime = new DateTime(
+                reservationStartDate.Year, 
+                reservationStartDate.Month, 
+                reservationStartDate.Day, 
+                reservationStartTime.Hour, 
+                reservationStartTime.Minute, 
+                reservationStartTime.Second
+            );
+
+            TimeSpan Difference = (startDateTime > DateTime.Now)
+                ? startDateTime - DateTime.Now : DateTime.Now - startDateTime;
+
+            if (!instantReservation && Difference < TimeSpan.FromMinutes(15))
+            {
+                instantReservation = true;
+            }
+
             var client = context.Clients.First(x => x.Id == userService.CurrentClient.Id);
             Session session = new Session()
                 {
                     IdClient = client.Id,
                     HoursCount = hoursCountInt,
                     IdWorkStation = Selected.Id,
-                    StartTime = instantReservation ? DateTime.Now : new DateTime(reservationStartDate.Year, reservationStartDate.Month, reservationStartDate.Day, reservationStartTime.Hour, reservationStartTime.Minute, reservationStartTime.Second),
+                    StartTime = instantReservation ? DateTime.Now : startDateTime,
                 };
 
             context.Sessions.Add(session);

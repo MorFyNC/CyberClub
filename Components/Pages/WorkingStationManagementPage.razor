@@ -452,6 +452,11 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
         using var transaction = await context.Database.BeginTransactionAsync();
         try
         {
+            var cost = selectedWorkStation.Cost * hoursCountInt;
+            if(cost > client.Balance) {
+                throw new Exception($"На балансе пользователя недостаточно средств для проведения оплаты, не хватает: {cost - client.Balance}");
+            }
+
             Session session = new Session()
             {
                 IdClient = client.Id,
@@ -465,7 +470,7 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
 
             SessionPayment sessionPayment = new SessionPayment()
                 {
-                    TotalCost = hoursCountInt * selectedWorkStation.Cost,
+                    TotalCost = cost,
                     BonusesSpent = null,
                     HoursFromMembership = 0,
                     IdSession = session.Id
@@ -490,6 +495,12 @@ else if(isCreatingWorkStation && !succesfullyCreated) {
                 Amount = 10 + loyalityLevel.BonusIncrease.Value,
                 ClientId = client.Id
             };
+
+            var trackedClient = await context
+                .Clients
+                .FirstOrDefaultAsync(x => x.Id == client.Id);
+
+            trackedClient.Balance -= cost;
 
             context.BonusMoves.Add(bonusMove);
             userService.CheckLevel(client);
