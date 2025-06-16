@@ -74,8 +74,6 @@ namespace CyberClub.Controllers
         [Consumes("application/json")]
         public async Task<IActionResult> PaymentWebhook([FromBody] JsonElement root)
         {
-            Console.WriteLine("\n\n\n\n\nWEBHOOK\n\n\n\n\n");
-
             try
             {
                 var eventType = root.GetProperty("event").GetString();

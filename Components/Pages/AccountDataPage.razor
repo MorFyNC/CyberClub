@@ -1,4 +1,5 @@
 ﻿@page "/AccountData"
+@using System.Text
 @rendermode InteractiveServer
 @inject BootcampContext _context
 @inject UserService userService
@@ -64,7 +65,7 @@
         {
             var user = userService.CurrentUser;
             user.Fullname = fullname;
-            user.Password = password;
+            user.Password = HashPassword(password);
             user.BirthDate = birthDate;
             user.RequireData = false;
             user.Role = "User";
@@ -116,5 +117,12 @@
         }
         message = "";
         return true;
+    }
+    private string HashPassword(string password)
+    {
+        using var sha256 = System.Security.Cryptography.SHA256.Create();
+        var bytes = Encoding.UTF8.GetBytes(password);
+        var hashBytes = sha256.ComputeHash(bytes);
+        return Convert.ToBase64String(hashBytes);
     }
 }
